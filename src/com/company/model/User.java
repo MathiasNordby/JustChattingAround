@@ -6,4 +6,5 @@ package com.company.model;
 public class User {
 
     private String ip;
+    private String ipMathias;
 }
