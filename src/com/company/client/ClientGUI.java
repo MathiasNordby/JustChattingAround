@@ -194,5 +194,3 @@ import com.company.model.Message;
         }
 
     }
-
-}

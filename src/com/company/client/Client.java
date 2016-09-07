@@ -206,16 +206,16 @@ public class Client  {
             String msg = scan.nextLine();
             // logout if message is LOGOUT
             if(msg.equalsIgnoreCase("LOGOUT")) {
-                client.sendMessage(new ChatMessage(ChatMessage.LOGOUT, ""));
+                client.sendMessage(new Message(Message.LOGOUT, ""));
                 // break to do the disconnect
                 break;
             }
             // message WhoIsIn
             else if(msg.equalsIgnoreCase("WHOISIN")) {
-                client.sendMessage(new ChatMessage(ChatMessage.WHOISIN, ""));
+                client.sendMessage(new Message(Message.WHOISIN, ""));
             }
             else {				// default to ordinary message
-                client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, msg));
+                client.sendMessage(new Message(Message.MESSAGE, msg));
             }
         }
         // done disconnect

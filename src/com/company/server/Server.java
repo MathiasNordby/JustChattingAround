@@ -251,7 +251,7 @@ public class Server {
                 // Switch on the type of message receive
                 switch(cm.getType()) {
 
-                    case Message.MESSAGE;
+                    case Message.MESSAGE:
                         broadcast(username + ": " + message);
                         break;
                     case Message.LOGOUT:
