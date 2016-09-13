@@ -19,6 +19,8 @@ public class ClientGUI extends JFrame implements ActionListener {
     private JLabel loginAsLabel;
     private JLabel ipLabel;
     private JLabel portLabel;
+    private JLabel usersOnlineLabel;
+    private int usersOnline;
     private String loggedAsName;
     private String ip;
     private int port;
@@ -56,6 +58,11 @@ public class ClientGUI extends JFrame implements ActionListener {
         port = 80;
         portLabel.setText("Port: " + port);
         portLabel.setBounds(400, 25, 100, 100);
+
+        usersOnlineLabel = new JLabel();
+        usersOnline = 3204;
+        usersOnlineLabel.setText("Online Users: " + usersOnline);
+        usersOnlineLabel.setBounds(800, 25, 300, 100);
 
         textboxArea = new JTextArea();
         textboxArea.setEnabled(false);
@@ -106,6 +113,7 @@ public class ClientGUI extends JFrame implements ActionListener {
         panel.add(loginAsLabel);
         panel.add(ipLabel);
         panel.add(portLabel);
+        panel.add(usersOnlineLabel);
         this.setContentPane(panel);
         this.setSize(FRAME_WIDTH, FRAME_HEIGHT);
 
