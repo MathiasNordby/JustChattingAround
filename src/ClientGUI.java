@@ -76,6 +76,7 @@ public class ClientGUI extends JFrame implements ActionListener {
         toolBar.add(new JButton(new AbstractAction("LogOut") {
             public void actionPerformed(ActionEvent e) {
                 if(client != null){
+                    client.sendMessage(new Message(Message.QUIT));
                     client.disconnect();
                 }
             }

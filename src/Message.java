@@ -20,6 +20,7 @@ public class Message implements Serializable {
         this.type = type;
     }
 
+
     public Message(String username , int type, String message) {
         this.username = username;
         this.type = type;

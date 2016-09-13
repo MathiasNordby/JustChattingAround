@@ -14,12 +14,14 @@ public class Client {
     private String serverAddress, username;
     private int serverPort;
     private ClientGUI clientGUI;
+    private boolean connected;
 
     public Client (String connectAddress, String username, int connectPort, ClientGUI clientGUI){
         this.serverAddress = connectAddress;
         this.username = username;
         this.serverPort = connectPort;
         this.clientGUI = clientGUI;
+
     }
 
     public boolean start(){
@@ -33,6 +35,8 @@ public class Client {
             display("Unsuccessful login");
             return false;
         }
+
+        connected = true;
         Thread serverListener = new Thread(() -> {
             while(true) {
                 try {
@@ -57,23 +61,23 @@ public class Client {
                     }
                 }
                 catch(IOException e) {
-                    display("Server timed out3: " + e);
+                    if(connected){
+                        display("Server timed out3: " + e);
+                    }
                     break;
                 }
                 catch(ClassNotFoundException e2) {
                 }
             }
-        });
-        serverListener.run();
+        }
+        );
+        serverListener.start();
 
         Thread heartBeat = new Thread(()-> {
             while(true) {
                 try {
-                    System.out.println("test");
-                    outputStream.writeObject(new Message(Message.ALVE));
-                    wait(60000);
-                    System.out.println("test2");
-
+                    Thread.sleep(60000);
+                    outputStream.writeObject(new Message(username, Message.ALVE));
                 }
                 catch(IOException e) {
                     display("Server timed out1: " + e);
@@ -84,7 +88,8 @@ public class Client {
                 }
             }
         });
-        heartBeat.run();
+
+        heartBeat.start();
     return true;
     }
 
@@ -102,6 +107,7 @@ public class Client {
     }
 
     public void disconnect(){
+        connected = false;
         try {
             if(inputStream != null){
                 inputStream.close();
@@ -112,7 +118,7 @@ public class Client {
             if(socket != null){
                 socket.close();
             }
-            System.out.println("OMG!");
+            display("Successfully disconnected");
         }
         catch(Exception ex){
             display("Exception when disconnecting: " + ex);

@@ -65,7 +65,6 @@ public class Server {
     public void broadcast(Message message) {
         for (int i = clientList.size(); --i >= 0; ) {
             ActiveClient activeClient = clientList.get(i);
-            // try to write to the Client if it fails removeClient it from the list
             if (!activeClient.writeToThisClient(message)) {
                 clientList.remove(i);
                 display("Disconnected Client " + activeClient.getUsername() + " removed from list.");

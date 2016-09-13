@@ -10,7 +10,6 @@ import java.util.TimerTask;
  * Created by mikkel on 12-09-2016.
  */
 public class ActiveClient extends Thread {
-    // the socket where to listen/talk
     private Socket socket;
     private ObjectInputStream inputStream;
     private ObjectOutputStream outputStream;
@@ -41,7 +40,16 @@ public class ActiveClient extends Thread {
             connectedServer.display("Error. Could not create IO streams: " + e);
             return;
         }
-
+        aliveTimer = new Timer();
+        System.out.println("timer start" + new Date());
+        aliveTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("timer exe" + new Date());
+                close();
+                connectedServer.broadcast(new Message(username, Message.DATA ," disconnected by dropout"));
+            }
+        }, 70000);
     }
 
     public synchronized void run() {
@@ -66,11 +74,17 @@ public class ActiveClient extends Thread {
                     connectedServer.broadcast(message);
                     break;
                 case Message.QUIT:
-                    connectedServer.broadcast(new Message(username, Message.DATA ," disconnected by own will"));
+                    try {
+                        socket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     connected = false;
+                    connectedServer.broadcast(new Message(username, Message.DATA ," disconnected by own will"));
                     break;
                 case Message.ALVE:
                     alive();
+                    connectedServer.display(message.getUsername() + ": Is alive");
                     break;
                 case Message.JOIN:
                     for(ActiveClient activeClient: connectedServer.getClientList()){
@@ -96,7 +110,7 @@ public class ActiveClient extends Thread {
     }
 
     public boolean writeToThisClient(Message message) {
-        if(!socket.isConnected()) {
+        if(socket.isClosed()) {
             close();
             return false;
         }
@@ -111,14 +125,19 @@ public class ActiveClient extends Thread {
     }
 
     private void alive(){
-        aliveTimer.cancel();
-        aliveTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                close();
-                connectedServer.broadcast(new Message(username, Message.DATA ," disconnected by dropout"));
-            }
-        }, 0, 70000);
+        System.out.println("alive run" + new Date());
+        if(aliveTimer != null){
+            aliveTimer.cancel();
+            aliveTimer = new Timer();
+            System.out.println("it did!" + new Date());
+            aliveTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    close();
+                    connectedServer.broadcast(new Message(username, Message.DATA ," disconnected by dropout"));
+                }
+            }, 70000);
+        }
     }
 
     public String getUsername() {
