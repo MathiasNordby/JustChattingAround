@@ -29,7 +29,7 @@ public class Client {
             socket = new Socket(serverAddress, serverPort);
             outputStream = new ObjectOutputStream(socket.getOutputStream());
             inputStream  = new ObjectInputStream(socket.getInputStream());
-            outputStream.writeObject(username);
+            outputStream.writeObject(new Message(username, Message.JOIN));
 
         } catch (Exception e){
             display("Unsuccessful login: " + e);
@@ -41,7 +41,6 @@ public class Client {
             while(true) {
                 try {
                     Message message = (Message) inputStream.readObject();
-                    System.out.println("Type: " + message.getType());
                     switch(message.getType()) {
 
                         case Message.DATA:

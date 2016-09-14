@@ -31,22 +31,18 @@ public class ActiveClient extends Thread implements Serializable {
             Message message = (Message) inputStream.readObject();
             if (message.getType() == Message.JOIN){
                 for (ActiveClient client: connectedServer.getClientList()){
-                    if(client.getUsername().equalsIgnoreCase(message.getUsername())){
+                    if(client.getUsername().equalsIgnoreCase(message.getUsername())) {
                         outputStream.writeObject(new Message(Message.J_ERR));
                         close();
                         connectedServer.removeClient(id);
-                    }else {
-                        outputStream.writeObject(new Message(Message.J_OK));
-                        username = message.getUsername();
-
+                        break;
                     }
                 }
-
+                outputStream.writeObject(new Message(Message.J_OK));
+                username = message.getUsername();
+                connectedServer.display(username + " connected.");
+                connectedDate = new Date();
             }
-            username = (String) inputStream.readObject();
-            connectedServer.display(username + " connected.");
-            connectedDate = new Date();
-
         }
         catch (IOException e) {
 
@@ -57,11 +53,9 @@ public class ActiveClient extends Thread implements Serializable {
             return;
         }
         aliveTimer = new Timer();
-        System.out.println("timer start" + new Date());
         aliveTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                System.out.println("timer exe" + new Date());
                 close();
                 connectedServer.broadcast(new Message(username, Message.DATA ," disconnected by dropout"));
             }
@@ -131,7 +125,6 @@ public class ActiveClient extends Thread implements Serializable {
             return false;
         }
         try {
-            System.out.println("OMG!" + message.getType());
             outputStream.writeObject(message);
         }
         catch(IOException e) {
@@ -142,11 +135,9 @@ public class ActiveClient extends Thread implements Serializable {
     }
 
     private void alive(){
-        System.out.println("alive run" + new Date());
         if(aliveTimer != null){
             aliveTimer.cancel();
             aliveTimer = new Timer();
-            System.out.println("it did!" + new Date());
             aliveTimer.schedule(new TimerTask() {
                 @Override
                 public void run() {

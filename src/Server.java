@@ -40,7 +40,6 @@ public class Server {
                 clientList.add(activeClientThread);
                 activeClientThread.start();
                 updateActiveClientList();
-                System.out.println("Now we are here");
             }
             serverSocket.close();
             for(ActiveClient activeClient : clientList){
@@ -69,13 +68,17 @@ public class Server {
     public void broadcast(Message message) {
         for (int i = clientList.size(); --i >= 0; ) {
             ActiveClient activeClient = clientList.get(i);
-            System.out.println("Send to client: " + i);
             if (!activeClient.writeToThisClient(message)) {
                 clientList.remove(i);
                 display("Disconnected Client " + activeClient.getUsername() + " removed from list.");
             }
         }
-        display(message.getUsername() + " :" + message.getMessage());
+        if(message.getType() == Message.DATA){
+            display(message.getUsername() + " :" + message.getMessage());
+        } else if(message.getType() == Message.LIST){
+            //server list clients
+        }
+
     }
 
     public void removeClient(int id) {
@@ -89,9 +92,7 @@ public class Server {
     }
 
     public void updateActiveClientList(){
-        System.out.println("This is called");
         broadcast(new Message(Message.LIST, clientList));
-        System.out.println(Message.LIST);
     }
 
     public ArrayList<ActiveClient> getClientList() {
