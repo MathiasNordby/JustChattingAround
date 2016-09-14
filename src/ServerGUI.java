@@ -55,7 +55,7 @@ public class ServerGUI extends JFrame implements ActionListener {
         ipLabel.setBounds(275, 25, 100, 100);
 
         portLabel = new JLabel();
-        port = 80;
+        port = 804;
         portLabel.setText("Port: " + port);
         portLabel.setBounds(400, 25, 100, 100);
 

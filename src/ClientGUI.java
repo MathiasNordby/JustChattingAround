@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -55,7 +56,7 @@ public class ClientGUI extends JFrame implements ActionListener {
         ipLabel.setBounds(275, 25, 100, 100);
 
         portLabel = new JLabel();
-        port = 80;
+        port = 804;
         portLabel.setText("Port: " + port);
         portLabel.setBounds(400, 25, 100, 100);
 
@@ -147,5 +148,12 @@ public class ClientGUI extends JFrame implements ActionListener {
         }).start();
     }
 
+    public void listClients(ArrayList<ActiveClient> clients){
+        for(ActiveClient client: clients){
+            System.out.println("OMG!!");
+            infoboxArea.append(client.toString());
+            System.out.println(client.toString());
+        }
+    }
 }
 

@@ -1,3 +1,4 @@
+import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -31,13 +32,15 @@ public class Server {
             while(running)
             {
                 Socket socket = serverSocket.accept();
+
                 if(!running)
                     break;
 
                 ActiveClient activeClientThread = new ActiveClient(socket, ++clientId, this);
                 clientList.add(activeClientThread);
                 activeClientThread.start();
-
+                updateActiveClientList();
+                System.out.println("Now we are here");
             }
             serverSocket.close();
             for(ActiveClient activeClient : clientList){
@@ -47,6 +50,7 @@ public class Server {
         catch(Exception e) {
             display("Error when closing the server and clients: " + e);
         }
+
     }
 
     protected void stop() {
@@ -65,6 +69,7 @@ public class Server {
     public void broadcast(Message message) {
         for (int i = clientList.size(); --i >= 0; ) {
             ActiveClient activeClient = clientList.get(i);
+            System.out.println("Send to client: " + i);
             if (!activeClient.writeToThisClient(message)) {
                 clientList.remove(i);
                 display("Disconnected Client " + activeClient.getUsername() + " removed from list.");
@@ -77,9 +82,16 @@ public class Server {
         for(ActiveClient activeClient : clientList){
             if(activeClient.getId() == id) {
                 clientList.remove(activeClient.getId());
+                updateActiveClientList();
                 return;
             }
         }
+    }
+
+    public void updateActiveClientList(){
+        System.out.println("This is called");
+        broadcast(new Message(Message.LIST, clientList));
+        System.out.println(Message.LIST);
     }
 
     public ArrayList<ActiveClient> getClientList() {

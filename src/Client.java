@@ -41,7 +41,7 @@ public class Client {
             while(true) {
                 try {
                     Message message = (Message) inputStream.readObject();
-
+                    System.out.println("Type: " + message.getType());
                     switch(message.getType()) {
 
                         case Message.DATA:
@@ -54,7 +54,8 @@ public class Client {
                             //J_OK message
                             break;
                         case Message.LIST:
-                            //List clients
+                            System.out.println("List we are");
+                            clientGUI.listClients(message.getclientList());
                             break;
                         default:
                             break;
