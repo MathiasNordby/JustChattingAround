@@ -125,7 +125,7 @@ public class ClientGUI extends JFrame implements ActionListener {
                             loginButton.setText("Logout");
                             loginAsLabel.setText("Logged in as: " + usernameField.getText());
                             yourIPiS.setText("Connected ip: " + ipField.getText());
-                            portLoggedInOn.setText("Port :" + portLoggedInOn.getText());
+                            portLoggedInOn.setText("Port :" + portField.getText());
                             loginAsLabel.setVisible(true);
                             yourIPiS.setVisible(true);
                             portLoggedInOn.setVisible(true);

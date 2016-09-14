@@ -58,7 +58,9 @@ public class ActiveClient extends Thread implements Serializable {
             @Override
             public void run() {
                 close();
+                connectedServer.removeClient(id);
                 connectedServer.broadcast(new Message(username, Message.DATA ," disconnected by dropout"));
+                connectedServer.updateActiveClientList();
             }
         }, 70000);
     }
