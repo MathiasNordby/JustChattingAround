@@ -1,6 +1,8 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -23,6 +25,9 @@ public class ClientGUI extends JFrame implements ActionListener {
     private JLabel usersOnlineLabel;
     private int usersOnline;
     private String loggedAsName;
+    private JTextField usernameField;
+    private JTextField ipField;
+    private JTextField portField;
     private String ip;
     private int port;
 
@@ -43,11 +48,26 @@ public class ClientGUI extends JFrame implements ActionListener {
         loginAsLabel.setText("Logged in as: " + loggedAsName);
         loginAsLabel.setBounds(25, 25, 300, 100);
 
+        //Username
+        usernameField = new JTextField(12);
+        usernameField.setBounds(25,25,165,25);
+        usernameField.setText("Insert Name");
+
         //IP: Label and Field
         ipLabel = new JLabel();
         ip = "22.155.139";
         ipLabel.setText("IP: " + ip);
         ipLabel.setBounds(275, 25, 100, 100);
+
+        try {
+            ip = InetAddress.getLocalHost().toString();
+        } catch(UnknownHostException e) {
+            System.out.println("Couldn't get IP-adress" + e);
+        }
+        ipField = new JTextField(20);
+        ipField.setBounds(275,25,165,25);
+        ipField.setText(ip);
+        ipField.setEnabled(false);
 
         //Port: Label and Field
         portLabel = new JLabel();
@@ -55,13 +75,16 @@ public class ClientGUI extends JFrame implements ActionListener {
         portLabel.setText("Port: " + port);
         portLabel.setBounds(400, 25, 100, 100);
 
+        portField = new JTextField(5);
+        portField.setBounds(555,25,165,25);
+
         //Login Button
         loginButton = new JButton();
         loginButton.setText("Login");
         loginButton.setOpaque(false);
         loginButton.setContentAreaFilled(false);
         loginButton.setBorderPainted(true);
-        loginButton.setBounds(500,25,100,100);
+        loginButton.setBounds(800,25,125,25);
         loginButton.addActionListener(this);
 
         //Users Online: Label, and TextArea
@@ -76,7 +99,7 @@ public class ClientGUI extends JFrame implements ActionListener {
         //Chat Area
         chatBoxArea = new JTextArea();
         chatBoxArea.setEnabled(false);
-        
+
         scrollPaneTextbox = new JScrollPane(chatBoxArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         scrollPaneTextbox.setBounds(25, 100, 700, 650);
@@ -110,6 +133,9 @@ public class ClientGUI extends JFrame implements ActionListener {
         panel.add(ipLabel);
         panel.add(portLabel);
         panel.add(loginButton);
+        panel.add(usernameField);
+        panel.add(portField);
+        panel.add(ipField);
         panel.add(usersOnlineLabel);
         this.setContentPane(panel);
         this.setSize(FRAME_WIDTH, FRAME_HEIGHT);
