@@ -11,10 +11,10 @@ import java.util.Date;
 public class ClientGUI extends JFrame implements ActionListener {
 
     private JButton sendButton;
-    private JTextArea textboxArea;
-    private JTextArea infoboxArea;
-    private JTextField textField;
-    private JToolBar toolBar;
+    private JButton loginButton;
+    private JTextArea chatBoxArea;
+    private JTextArea onlineUsersArea;
+    private JTextField writingTextField;
     private JScrollPane scrollPaneTextbox;
     private JScrollPane scrollPaneInfobox;
     private JLabel loginAsLabel;
@@ -37,6 +37,59 @@ public class ClientGUI extends JFrame implements ActionListener {
 
     private void createGUI() {
 
+        //Login as: Label and TextField
+        loginAsLabel = new JLabel();
+        loggedAsName = "<NameExample>";
+        loginAsLabel.setText("Logged in as: " + loggedAsName);
+        loginAsLabel.setBounds(25, 25, 300, 100);
+
+        //IP: Label and Field
+        ipLabel = new JLabel();
+        ip = "22.155.139";
+        ipLabel.setText("IP: " + ip);
+        ipLabel.setBounds(275, 25, 100, 100);
+
+        //Port: Label and Field
+        portLabel = new JLabel();
+        port = 804;
+        portLabel.setText("Port: " + port);
+        portLabel.setBounds(400, 25, 100, 100);
+
+        //Login Button
+        loginButton = new JButton();
+        loginButton.setText("Login");
+        loginButton.setOpaque(false);
+        loginButton.setContentAreaFilled(false);
+        loginButton.setBorderPainted(true);
+        loginButton.setBounds(500,25,100,100);
+        loginButton.addActionListener(this);
+
+        //Users Online: Label, and TextArea
+        usersOnlineLabel = new JLabel();
+        usersOnline = 3204;
+        usersOnlineLabel.setText("Online Users: " + usersOnline);
+        usersOnlineLabel.setBounds(800, 25, 300, 100);
+
+        onlineUsersArea = new JTextArea();
+        onlineUsersArea.setEnabled(false);
+
+        //Chat Area
+        chatBoxArea = new JTextArea();
+        chatBoxArea.setEnabled(false);
+        
+        scrollPaneTextbox = new JScrollPane(chatBoxArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scrollPaneTextbox.setBounds(25, 100, 700, 650);
+
+        // Write to chat Field
+        writingTextField = new JTextField();
+        writingTextField.setBounds(25, 775, 700, 70);
+
+        scrollPaneInfobox = new JScrollPane(onlineUsersArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scrollPaneInfobox.setBounds(750, 100, 225, 650);
+
+        //Send Button
         sendButton = new JButton();
         sendButton.setText("Send");
         sendButton.setOpaque(false);
@@ -45,96 +98,41 @@ public class ClientGUI extends JFrame implements ActionListener {
         sendButton.setBounds(750, 775, 225, 70);
         sendButton.addActionListener(this);
 
-        loginAsLabel = new JLabel();
-        loggedAsName = "<NameExample>";
-        loginAsLabel.setText("Logged in as: " + loggedAsName);
-        loginAsLabel.setBounds(25, 25, 300, 100);
-
-        ipLabel = new JLabel();
-        ip = "22.155.139";
-        ipLabel.setText("IP: " + ip);
-        ipLabel.setBounds(275, 25, 100, 100);
-
-        portLabel = new JLabel();
-        port = 804;
-        portLabel.setText("Port: " + port);
-        portLabel.setBounds(400, 25, 100, 100);
-
-        usersOnlineLabel = new JLabel();
-        usersOnline = 3204;
-        usersOnlineLabel.setText("Online Users: " + usersOnline);
-        usersOnlineLabel.setBounds(800, 25, 300, 100);
-
-        textboxArea = new JTextArea();
-        textboxArea.setEnabled(false);
-
-        infoboxArea = new JTextArea();
-        infoboxArea.setEnabled(false);
-
-        textField = new JTextField();
-        textField.setBounds(25, 775, 700, 70);
-
-        toolBar = new JToolBar();
-        toolBar.setBounds(0, 0, 1000, 30);
-        toolBar.add(new JButton(new AbstractAction("Login") {
-            public void actionPerformed(ActionEvent e) {
-                login();
-            }
-        }));
-        toolBar.add(new JButton(new AbstractAction("LogOut") {
-            public void actionPerformed(ActionEvent e) {
-                if(client != null){
-                    client.sendMessage(new Message(Message.QUIT));
-                    client.disconnect();
-                }
-            }
-        }));
-        toolBar.add(new JButton(new AbstractAction("Settings") {
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("test");
-            }
-        }));
-
-        scrollPaneTextbox = new JScrollPane(textboxArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        scrollPaneTextbox.setBounds(25, 100, 700, 650);
-
-        scrollPaneInfobox = new JScrollPane(infoboxArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        scrollPaneInfobox.setBounds(750, 100, 225, 650);
-
+        //Add all the stuff to the Panel
         JPanel panel = new JPanel();
         panel.setLayout(null);
         panel.setSize(FRAME_WIDTH, FRAME_HEIGHT);
         panel.add(sendButton);
-        panel.add(textField);
-        panel.add(toolBar);
+        panel.add(writingTextField);
         panel.add(scrollPaneTextbox);
         panel.add(scrollPaneInfobox);
         panel.add(loginAsLabel);
         panel.add(ipLabel);
         panel.add(portLabel);
+        panel.add(loginButton);
         panel.add(usersOnlineLabel);
         this.setContentPane(panel);
         this.setSize(FRAME_WIDTH, FRAME_HEIGHT);
 
     }
-
+    //Show timestamp
     private String getTime() {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         String time = sdf.format(new Date()) + " ";
         return time;
     }
 
+    //Sending the message - Action Performed
     @Override
     public void actionPerformed(ActionEvent e) {
-        client.sendMessage(new Message(client.getUsername(), Message.DATA,textField.getText()));
-        textField.setText("");
+        client.sendMessage(new Message(client.getUsername(), Message.DATA, writingTextField.getText()));
+        writingTextField.setText("");
     }
 
     public void writeTextToGUI(String text){
-        textboxArea.append(getTime() + text + "\n");
+        chatBoxArea.append(getTime() + text + "\n");
     }
+
 
     public void login(){
         client = new Client("localhost", "THIS_IS_USER" , port, this);
@@ -151,7 +149,7 @@ public class ClientGUI extends JFrame implements ActionListener {
     public void listClients(ArrayList<ActiveClient> clients){
         for(ActiveClient client: clients){
             System.out.println("OMG!!");
-            infoboxArea.append(client.toString());
+            onlineUsersArea.append(client.toString());
             System.out.println(client.toString());
         }
     }
