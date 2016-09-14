@@ -33,6 +33,7 @@ public class Message implements Serializable {
     }
 
     public Message(int type, ArrayList<ActiveClient> clientList){
+        this.type = type;
         this.clientList = clientList;
     }
 

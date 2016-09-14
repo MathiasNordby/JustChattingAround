@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.Socket;
 import java.util.Date;
 import java.util.Timer;
@@ -9,15 +10,15 @@ import java.util.TimerTask;
 /**
  * Created by mikkel on 12-09-2016.
  */
-public class ActiveClient extends Thread {
-    private Socket socket;
-    private ObjectInputStream inputStream;
-    private ObjectOutputStream outputStream;
+public class ActiveClient extends Thread implements Serializable {
+    private static Socket socket;
+    private static ObjectInputStream inputStream;
+    private static ObjectOutputStream outputStream;
     private int id;
     private String username;
     private Date connectedDate;
-    private Server connectedServer;
-    private Timer aliveTimer;
+    private static Server connectedServer;
+    private static Timer aliveTimer;
 
     public ActiveClient(Socket socket, int id, Server connectedServer) {
         this.id = id;
@@ -115,6 +116,7 @@ public class ActiveClient extends Thread {
             return false;
         }
         try {
+            System.out.println("OMG!" + message.getType());
             outputStream.writeObject(message);
         }
         catch(IOException e) {
@@ -144,4 +146,8 @@ public class ActiveClient extends Thread {
         return username;
     }
 
+    @Override
+    public String toString() {
+        return  "Id: " + id + " Username: " + username + "\nConnected since: " + connectedDate + "\n";
+    }
 }
