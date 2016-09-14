@@ -15,10 +15,10 @@ public class Server {
     private String serverUsername;
     private ServerGUI serverGUI;
 
-    public Server(int serverPort, ServerGUI serverGUI){
+    public Server(int serverPort, ServerGUI serverGUI, String serverUsername){
         this.serverPort = serverPort;
         clientList = new ArrayList<>();
-        serverUsername = "Admin";
+        this.serverUsername = serverUsername;
         this.serverGUI = serverGUI;
         this.serverGUI = serverGUI;
     }

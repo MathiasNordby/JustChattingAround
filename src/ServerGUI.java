@@ -1,6 +1,5 @@
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
@@ -9,13 +8,16 @@ import java.util.Date;
 /**
  * Created by Mathias on 12-09-2016.
  */
-public class ServerGUI extends JFrame implements ActionListener {
+public class ServerGUI extends JFrame implements ActionListener, MouseListener {
 
     private JButton sendButton;
+    private JButton createServer;
     private JTextArea textboxArea;
     private JTextArea infoboxArea;
     private JTextField textField;
-    private JToolBar toolBar;
+    private JTextField accountNameField;
+    private JTextField ipField;
+    private JTextField portField;
     private JScrollPane scrollPaneTextbox;
     private JScrollPane scrollPaneInfobox;
     private JLabel loginAsLabel;
@@ -23,10 +25,7 @@ public class ServerGUI extends JFrame implements ActionListener {
     private JLabel portLabel;
     private JLabel usersOnlineLabel;
     private int usersOnline;
-    private String nameInsert;
     private String ip;
-    private int port;
-    private int portNumber;
 
     private static final int FRAME_WIDTH = 1000;
     private static final int FRAME_HEIGHT = 900;
@@ -47,7 +46,7 @@ public class ServerGUI extends JFrame implements ActionListener {
         sendButton.addActionListener(this);
 
         loginAsLabel = new JLabel();
-        loginAsLabel.setText("Logged in as: " + nameInsert);
+        //loginAsLabel.setText("Logged in as: " + accountNameField.getText());
         loginAsLabel.setBounds(25, 25, 300, 100);
 
         ipLabel = new JLabel();
@@ -60,12 +59,8 @@ public class ServerGUI extends JFrame implements ActionListener {
         ipLabel.setBounds(275, 25, 300, 100);
 
         portLabel = new JLabel();
-        //portNumber = Integer.parseInt(port.getText());
-        portLabel.setText("Port: " + portNumber);
-        portLabel.setBounds(500, 25, 300, 100);
-        port = 804;
-        portLabel.setText("Port: " + port);
-        portLabel.setBounds(400, 25, 100, 100);
+        //portLabel.setText("Port: " + portField.getText());
+        portLabel.setBounds(555, 25, 300, 100);
 
         usersOnlineLabel = new JLabel();
         usersOnline = 3204;
@@ -81,19 +76,39 @@ public class ServerGUI extends JFrame implements ActionListener {
         textField = new JTextField();
         textField.setBounds(25, 775, 700, 70);
 
-        toolBar = new JToolBar();
-        toolBar.setBounds(0, 0, 1000, 30);
-        toolBar.add(new JButton(new AbstractAction("Login") {
+        //Username
+        accountNameField = new JTextField(12);
+        accountNameField.setBounds(25,25,165,25);
+        accountNameField.setText("Insert Name");
+
+
+        //IP
+        try {
+            ip = InetAddress.getLocalHost().toString();
+        } catch(UnknownHostException e) {
+            System.out.println("Couldn't get IP-adress" + e);
+        }
+        ipField = new JTextField(20);
+        ipField.setBounds(275,25,165,25);
+        ipField.setText(ip);
+        ipField.setEnabled(false);
+
+        //Port
+        portField = new JTextField(5);
+        portField.setBounds(555,25,165,25);
+
+        //Login button
+        createServer = new JButton(new AbstractAction("Create Server") {
             public void actionPerformed(ActionEvent e) {
-                JFrame loginGUI = new LoginGUI();
+                login();
             }
-        }));
-        toolBar.add(new JButton(new AbstractAction("LogOut") {
-            public void actionPerformed(ActionEvent e) {
-                server.stop();
-            }
-        }));
-        toolBar.add(new JButton("Settings"));
+        });
+        createServer.setOpaque(false);
+        createServer.setContentAreaFilled(false);
+        createServer.setBorderPainted(true);
+        createServer.setBounds(800,25,125,25);
+
+
 
         scrollPaneTextbox = new JScrollPane(textboxArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -108,13 +123,16 @@ public class ServerGUI extends JFrame implements ActionListener {
         panel.setSize(FRAME_WIDTH, FRAME_HEIGHT);
         panel.add(sendButton);
         panel.add(textField);
-        panel.add(toolBar);
         panel.add(scrollPaneTextbox);
         panel.add(scrollPaneInfobox);
         panel.add(loginAsLabel);
         panel.add(ipLabel);
         panel.add(portLabel);
         panel.add(usersOnlineLabel);
+        panel.add(accountNameField);
+        panel.add(ipField);
+        panel.add(portField);
+        panel.add(createServer);
         this.setContentPane(panel);
         this.setSize(FRAME_WIDTH, FRAME_HEIGHT);
 
@@ -137,7 +155,9 @@ public class ServerGUI extends JFrame implements ActionListener {
     }
 
     public void login(){
-        server = new Server(portNumber, this);
+        int port = Integer.parseInt(portField.getText());
+        String adminName = accountNameField.getText();
+        server = new Server(port, this, adminName);
 
         new Thread(new Runnable()
         {
@@ -150,4 +170,32 @@ public class ServerGUI extends JFrame implements ActionListener {
     }
 
 
+    @Override
+    public void mouseClicked(MouseEvent mouseEvent) {
+        if(accountNameField.getText().equals("Insert Name")) {
+            accountNameField.setText("");
+            accountNameField.repaint();
+            accountNameField.revalidate();
+        }
+    }
+
+    @Override
+    public void mousePressed(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent mouseEvent) {
+
+    }
 }

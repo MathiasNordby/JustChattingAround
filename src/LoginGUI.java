@@ -11,6 +11,7 @@ import java.net.UnknownHostException;
 public class LoginGUI extends JFrame implements ActionListener {
 
     private String ip;
+    private Server server;
 
     public LoginGUI() {
         placeComponents();
@@ -71,7 +72,5 @@ public class LoginGUI extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
         this.dispose();
-        JFrame serverGUI = new ServerGUI();
-        serverGUI.setVisible(true);
     }
 }
