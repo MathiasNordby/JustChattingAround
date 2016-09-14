@@ -84,22 +84,14 @@ public class ActiveClient extends Thread implements Serializable {
                     connectedServer.broadcast(message);
                     break;
                 case Message.QUIT:
-                    try {
-                        socket.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    close();
                     connected = false;
                     connectedServer.broadcast(new Message(username, Message.DATA ," disconnected by own will"));
+                    connectedServer.updateActiveClientList();
                     break;
                 case Message.ALVE:
                     alive();
                     connectedServer.display(message.getUsername() + ": Is alive");
-                    break;
-                case Message.JOIN:
-                    for(ActiveClient activeClient: connectedServer.getClientList()){
-                        //Run them for each name.... but then it is already kinda accepted
-                    }
                     break;
                 default:
                     break;

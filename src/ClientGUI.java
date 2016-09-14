@@ -1,13 +1,11 @@
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.awt.event.*;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Mathias on 12-09-2016.
@@ -28,12 +26,10 @@ public class ClientGUI extends JFrame implements ActionListener {
     private JLabel usersOnlineLabel;
     private JLabel enterIP;
     private JLabel enterPort;
-    private int usersOnline;
     private JTextField usernameField;
     private JTextField ipField;
     private JTextField portField;
-    private String ip;
-    private int port;
+    private boolean success;
 
     private static final int FRAME_WIDTH = 1000;
     private static final int FRAME_HEIGHT = 900;
@@ -50,15 +46,10 @@ public class ClientGUI extends JFrame implements ActionListener {
         loginAsLabel = new JLabel();
         loginAsLabel.setBounds(25, 25, 300, 100);
 
-        yourIPiS = new JLabel("IP: " + ip);
+        yourIPiS = new JLabel("IP: ");
         yourIPiS.setBounds(275, 25, 300, 100);
-        try {
-            ip = InetAddress.getLocalHost().toString();
-        } catch(UnknownHostException e) {
-            System.out.println("Couldn't get IP-adress" + e);
-        }
 
-        portLoggedInOn = new JLabel("Port: " + port);
+        portLoggedInOn = new JLabel("Port: ");
         portLoggedInOn.setBounds(555, 25, 300, 100);
 
 
@@ -84,15 +75,19 @@ public class ClientGUI extends JFrame implements ActionListener {
         enterIP = new JLabel("IP-Adress:");
         enterIP.setBounds(275, 10, 165, 25);
 
-        try {
-            ip = InetAddress.getLocalHost().toString();
-        } catch(UnknownHostException e) {
-            System.out.println("Couldn't get IP-adress" + e);
-        }
         ipField = new JTextField(20);
         ipField.setBounds(275,30,165,25);
-        ipField.setText(ip);
-        ipField.setEnabled(false);
+        ipField.setText("Insert Ip");
+        ipField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                if(ipField.getText().equals("Insert Ip")) {
+                    ipField.setText("");
+                    repaint();
+                    revalidate();
+                }
+            }
+        });
 
 
         //Port: Label and Field
@@ -105,10 +100,17 @@ public class ClientGUI extends JFrame implements ActionListener {
         portField.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
-                if(portField.getText().equals("Insert Port")) {
+                if( portField.getText().equals("Insert Port")) {
                     portField.setText("");
                     repaint();
                     revalidate();
+                }
+            }
+        });
+        portField.addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent e) {
+                if(!Character.isDigit(e.getKeyChar())){
+                    e.consume();
                 }
             }
         });
@@ -117,24 +119,28 @@ public class ClientGUI extends JFrame implements ActionListener {
         loginButton = new JButton(new AbstractAction("Login") {
             public void actionPerformed(ActionEvent e) {
                 if (loginButton.getText().equals("Login")) {
-                    loginButton.setText("Logout");
-                    loginAsLabel.setText("Logged in as: " + usernameField.getText());
-
-                    loginAsLabel.setVisible(true);
-                    yourIPiS.setVisible(true);
-                    portLoggedInOn.setVisible(true);
-                    enterUsername.setVisible(false);
-                    enterIP.setVisible(false);
-                    enterPort.setVisible(false);
-                    usernameField.setVisible(false);
-                    ipField.setVisible(false);
-                    portField.setVisible(false);
-
-                    login();
+                    if(loginCheck()){
+                        login();
+                        if(success){
+                            loginButton.setText("Logout");
+                            loginAsLabel.setText("Logged in as: " + usernameField.getText());
+                            yourIPiS.setText("Connected ip: " + ipField.getText());
+                            portLoggedInOn.setText("Port :" + portLoggedInOn.getText());
+                            loginAsLabel.setVisible(true);
+                            yourIPiS.setVisible(true);
+                            portLoggedInOn.setVisible(true);
+                            enterUsername.setVisible(false);
+                            enterIP.setVisible(false);
+                            enterPort.setVisible(false);
+                            usernameField.setVisible(false);
+                            ipField.setVisible(false);
+                            portField.setVisible(false);
+                            usersOnlineLabel.setVisible(true);
+                        }
+                    }
                 } else {
 
                     loginButton.setText("Login");
-
                     loginAsLabel.setVisible(false);
                     yourIPiS.setVisible(false);
                     portLoggedInOn.setVisible(false);
@@ -144,8 +150,10 @@ public class ClientGUI extends JFrame implements ActionListener {
                     usernameField.setVisible(true);
                     ipField.setVisible(true);
                     portField.setVisible(true);
-
+                    client.sendMessage(new Message(Message.QUIT));
                     client.disconnect();
+                    usersOnlineLabel.setVisible(false);
+                    onlineUsersArea.setText("");
                 }
             }
         });
@@ -161,8 +169,6 @@ public class ClientGUI extends JFrame implements ActionListener {
 
         //Users Online: Label, and TextArea
         usersOnlineLabel = new JLabel();
-        usersOnline = 3204;
-        usersOnlineLabel.setText("Online Users: " + usersOnline);
         usersOnlineLabel.setBounds(800, 25, 300, 100);
 
         onlineUsersArea = new JTextArea();
@@ -236,22 +242,77 @@ public class ClientGUI extends JFrame implements ActionListener {
 
 
     public void login(){
-        client = new Client("localhost", "THIS_IS_USER" , port, this);
+        int port = Integer.parseInt(portField.getText());
+        String username = usernameField.getText();
+        String ip = ipField.getText();
+
+        success = true;
+
+        client = new Client(ip, username , port, this);
+
         new Thread(new Runnable()
         {
             @Override
             public void run()
             {
-                client.start();
+                if(!client.start()){
+                    failed();
+                }
+
             }
         }).start();
     }
+    public void failed (){
+        success = false;
+    }
 
     public void listClients(ArrayList<ActiveClient> clients){
+        onlineUsersArea.setText("");
+        usersOnlineLabel.setText("Online Users: " + clients.size());
         for(ActiveClient client: clients){
-            System.out.println("OMG!!");
             onlineUsersArea.append(client.toString());
-            System.out.println(client.toString());
+        }
+    }
+
+    public boolean loginCheck(){
+        if(portField.getText().equals("Insert Port") || portField.getText().equals("")){
+            JOptionPane.showMessageDialog(this, "Insert valid port number. Note only numbers allowed.\nAnd numbers between 0-65535.");
+            portField.setText("");
+            return false;
+        }
+        if(!(Integer.parseInt(portField.getText()) <= 65535 && Integer.parseInt(portField.getText()) >= 0 )){
+            JOptionPane.showMessageDialog(this, "Insert valid port number. Note only numbers allowed.\nAnd numbers between 0-65535.");
+            portField.setText("");
+            return false;
+        }
+        if(ipField.getText().equals("Insert Ip") || ipField.getText().equals("")){
+            JOptionPane.showMessageDialog(this, "Insert ip. Like 192.168.46.34 or localhost");
+            ipField.setText("");
+            return false;
+        }
+        if(usernameField.getText().equals("Insert Name") || usernameField.getText().equals("")){
+            JOptionPane.showMessageDialog(this, "Insert valid username");
+            usernameField.setText("");
+            return false;
+        }
+
+        if(!ipVerify(ipField.getText())){
+            JOptionPane.showMessageDialog(this, "Insert ip. Like 192.168.46.34 or localhost");
+            ipField.setText("");
+            return false;
+        }
+        return true;
+    }
+
+    public boolean ipVerify(String ip){
+        String IPADDRESS_PATTERN = "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
+        Pattern pattern = Pattern.compile(IPADDRESS_PATTERN);
+        Matcher matcher = pattern.matcher(ip);
+        if (matcher.matches() || ip.equals("localhost")) {
+
+            return true;
+        } else{
+            return false;
         }
     }
 }

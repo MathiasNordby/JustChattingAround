@@ -76,7 +76,7 @@ public class Server {
         if(message.getType() == Message.DATA){
             display(message.getUsername() + " :" + message.getMessage());
         } else if(message.getType() == Message.LIST){
-            //server list clients
+            serverGUI.listClients(message.getclientList());
         }
 
     }

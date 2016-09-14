@@ -3,6 +3,7 @@ import java.awt.event.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -24,7 +25,6 @@ public class ServerGUI extends JFrame implements ActionListener {
     private JLabel ipLabel;
     private JLabel portLabel;
     private JLabel usersOnlineLabel;
-    private int usersOnline;
     private String ip;
 
     private static final int FRAME_WIDTH = 1000;
@@ -61,8 +61,7 @@ public class ServerGUI extends JFrame implements ActionListener {
         portLabel.setBounds(555, 25, 300, 100);
 
         usersOnlineLabel = new JLabel();
-        usersOnline = 3204;
-        usersOnlineLabel.setText("Online Users: " + usersOnline);
+        usersOnlineLabel.setText("Online Users: 0");
         usersOnlineLabel.setBounds(800, 25, 300, 100);
 
         textboxArea = new JTextArea();
@@ -127,24 +126,33 @@ public class ServerGUI extends JFrame implements ActionListener {
                 }
             }
         });
+        portField.addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent e) {
+                if(!Character.isDigit(e.getKeyChar())){
+                    e.consume();
+                }
+            }
+        });
 
         //Login button
         createServer = new JButton(new AbstractAction("Create Server") {
             public void actionPerformed(ActionEvent e) {
                 if(createServer.getText().equalsIgnoreCase("Create Server")) {
-                    createServer.setText("Disconnect Server");
-                    loginAsLabel.setText("Logged in as: " + adminNameField.getText());
-                    portLabel.setText("Port: " + portField.getText());
-                    loginAsLabel.setVisible(true);
-                    ipLabel.setVisible(true);
-                    portLabel.setVisible(true);
-                    enterAdminName.setVisible(false);
-                    enterIpAdress.setVisible(false);
-                    enterPort.setVisible(false);
-                    adminNameField.setVisible(false);
-                    ipField.setVisible(false);
-                    portField.setVisible(false);
-                    login();
+                    if(loginCheck()){
+                        createServer.setText("Disconnect Server");
+                        loginAsLabel.setText("Logged in as: " + adminNameField.getText());
+                        portLabel.setText("Port: " + portField.getText());
+                        loginAsLabel.setVisible(true);
+                        ipLabel.setVisible(true);
+                        portLabel.setVisible(true);
+                        enterAdminName.setVisible(false);
+                        enterIpAdress.setVisible(false);
+                        enterPort.setVisible(false);
+                        adminNameField.setVisible(false);
+                        ipField.setVisible(false);
+                        portField.setVisible(false);
+                        login();
+                    }
                 } else {
                     createServer.setText("Create Server");
                     loginAsLabel.setVisible(false);
@@ -231,6 +239,28 @@ public class ServerGUI extends JFrame implements ActionListener {
                 server.start();
             }
         }).start();
+    }
+
+    public void listClients(ArrayList<ActiveClient> clients){
+        infoboxArea.setText("");
+        usersOnlineLabel.setText("Online Users: " + clients.size());
+        for(ActiveClient client: clients){
+            infoboxArea.append(client.toString());
+        }
+    }
+
+    public boolean loginCheck(){
+        if(portField.getText().equals("Insert Port") || portField.getText().equals("")){
+            JOptionPane.showMessageDialog(this, "Insert valid port number. Note only numbers allowed");
+            portField.setText("");
+            return false;
+        }
+        if(adminNameField.getText().equals("Insert Name") || adminNameField.getText().equals("")){
+            JOptionPane.showMessageDialog(this, "Insert valid admin name");
+            adminNameField.setText("");
+            return false;
+        }
+        return true;
     }
 
 }
