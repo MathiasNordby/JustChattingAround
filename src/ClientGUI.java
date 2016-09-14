@@ -79,13 +79,21 @@ public class ClientGUI extends JFrame implements ActionListener {
         portField.setBounds(555,25,165,25);
 
         //Login Button
-        loginButton = new JButton();
-        loginButton.setText("Login");
+        loginButton = new JButton(new AbstractAction("Login") {
+            public void actionPerformed(ActionEvent e) {
+                if (loginButton.getText().equals("Login")) {
+                    loginButton.setText("Logout");
+                    login();
+                } else {
+                    loginButton.setText("Login");
+                    client.disconnect();
+                }
+            }
+        });
         loginButton.setOpaque(false);
         loginButton.setContentAreaFilled(false);
         loginButton.setBorderPainted(true);
         loginButton.setBounds(800,25,125,25);
-        loginButton.addActionListener(this);
 
         //Users Online: Label, and TextArea
         usersOnlineLabel = new JLabel();
