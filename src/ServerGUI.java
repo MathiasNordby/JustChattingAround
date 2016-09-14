@@ -1,6 +1,8 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -21,9 +23,10 @@ public class ServerGUI extends JFrame implements ActionListener {
     private JLabel portLabel;
     private JLabel usersOnlineLabel;
     private int usersOnline;
-    private String loggedAsName;
+    private String nameInsert;
     private String ip;
-    private int port;
+    private String port;
+    private int portNumber;
 
     private static final int FRAME_WIDTH = 1000;
     private static final int FRAME_HEIGHT = 900;
@@ -35,7 +38,6 @@ public class ServerGUI extends JFrame implements ActionListener {
     }
 
     private void createGUI() {
-
         sendButton = new JButton();
         sendButton.setText("Send");
         sendButton.setOpaque(false);
@@ -45,19 +47,22 @@ public class ServerGUI extends JFrame implements ActionListener {
         sendButton.addActionListener(this);
 
         loginAsLabel = new JLabel();
-        loggedAsName = "<NameExample>";
-        loginAsLabel.setText("Logged in as: " + loggedAsName);
+        loginAsLabel.setText("Logged in as: " + nameInsert);
         loginAsLabel.setBounds(25, 25, 300, 100);
 
         ipLabel = new JLabel();
-        ip = "22.155.139";
+        try {
+            ip = InetAddress.getLocalHost().toString();
+        } catch(UnknownHostException e) {
+            System.out.println("Couldn't get IP-adress" + e);
+        }
         ipLabel.setText("IP: " + ip);
-        ipLabel.setBounds(275, 25, 100, 100);
+        ipLabel.setBounds(275, 25, 300, 100);
 
         portLabel = new JLabel();
-        port = 80;
-        portLabel.setText("Port: " + port);
-        portLabel.setBounds(400, 25, 100, 100);
+        //portNumber = Integer.parseInt(port.getText());
+        portLabel.setText("Port: " + portNumber);
+        portLabel.setBounds(500, 25, 300, 100);
 
         usersOnlineLabel = new JLabel();
         usersOnline = 3204;
@@ -77,7 +82,7 @@ public class ServerGUI extends JFrame implements ActionListener {
         toolBar.setBounds(0, 0, 1000, 30);
         toolBar.add(new JButton(new AbstractAction("Login") {
             public void actionPerformed(ActionEvent e) {
-                login();
+                JFrame loginGUI = new LoginGUI();
             }
         }));
         toolBar.add(new JButton(new AbstractAction("LogOut") {
@@ -129,7 +134,7 @@ public class ServerGUI extends JFrame implements ActionListener {
     }
 
     public void login(){
-        server = new Server(port, this);
+        server = new Server(portNumber, this);
 
         new Thread(new Runnable()
         {

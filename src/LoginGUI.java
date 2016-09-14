@@ -2,31 +2,30 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * Created by Tanja on 12/09/2016.
  */
-public class LoginGUI extends JFrame {
+public class LoginGUI extends JFrame implements ActionListener {
 
+    private String ip;
 
-    public static void main(String[] args) {
+    public LoginGUI() {
+        placeComponents();
+    }
 
-        //JFrame med navn og størrelse - og luk på kryds
+    private void placeComponents() {
         JFrame loginFrame = new JFrame("Login Screen");
         loginFrame.setSize(400,300);
         loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JPanel loginFanel = new JPanel();
-        loginFanel.setLayout(new FlowLayout());
-        loginFrame.add(loginFanel);
-        placeComponents(loginFanel);
-
+        JPanel loginPanel = new JPanel();
+        loginPanel.setLayout(null);
+        loginFrame.add(loginPanel);
         loginFrame.setLocationRelativeTo(null);
         loginFrame.setVisible(true);
-    }
-
-    private static void placeComponents(JPanel loginPanel) {
-        loginPanel.setLayout(null);
 
         //Username
         JLabel usernameLabel = new JLabel("Username");
@@ -41,9 +40,15 @@ public class LoginGUI extends JFrame {
         JLabel ipAddressLabel = new JLabel("IP Address");
         ipAddressLabel.setBounds(20,80,80,25);
         loginPanel.add(ipAddressLabel);
-
+        try {
+            ip = InetAddress.getLocalHost().toString();
+        } catch(UnknownHostException e) {
+            System.out.println("Couldn't get IP-adress" + e);
+        }
         JTextField ipAddressField = new JTextField(20);
         ipAddressField.setBounds(110,80,165,25);
+        ipAddressField.setText(ip);
+        ipAddressField.setEnabled(false);
         loginPanel.add(ipAddressField);
 
         //Port
@@ -63,4 +68,10 @@ public class LoginGUI extends JFrame {
     }
 
 
+    @Override
+    public void actionPerformed(ActionEvent actionEvent) {
+        this.dispose();
+        JFrame serverGUI = new ServerGUI();
+        serverGUI.setVisible(true);
+    }
 }
