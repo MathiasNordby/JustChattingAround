@@ -28,6 +28,21 @@ public class ActiveClient extends Thread implements Serializable {
         {
             outputStream = new ObjectOutputStream(socket.getOutputStream());
             inputStream  = new ObjectInputStream(socket.getInputStream());
+            Message message = (Message) inputStream.readObject();
+            if (message.getType() == Message.JOIN){
+                for (ActiveClient client: connectedServer.getClientList()){
+                    if(client.getUsername().equalsIgnoreCase(message.getUsername())){
+                        outputStream.writeObject(new Message(Message.J_ERR));
+                        close();
+                        connectedServer.removeClient(id);
+                    }else {
+                        outputStream.writeObject(new Message(Message.J_OK));
+                        username = message.getUsername();
+
+                    }
+                }
+
+            }
             username = (String) inputStream.readObject();
             connectedServer.display(username + " connected.");
             connectedDate = new Date();

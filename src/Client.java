@@ -30,9 +30,9 @@ public class Client {
             outputStream = new ObjectOutputStream(socket.getOutputStream());
             inputStream  = new ObjectInputStream(socket.getInputStream());
             outputStream.writeObject(username);
-            display("Successful login");
+
         } catch (Exception e){
-            display("Unsuccessful login");
+            display("Unsuccessful login: " + e);
             return false;
         }
 
@@ -48,13 +48,13 @@ public class Client {
                             display(message.getUsername()+ ": " + message.getMessage());
                             break;
                         case Message.J_ERR:
-                            //J_ERR message
+                            display("Error Username " + username + " already in use. Try something else.");
+                            disconnect();
                             break;
                         case Message.J_OK:
-                            //J_OK message
+                            display("Successful login");
                             break;
                         case Message.LIST:
-                            System.out.println("List we are");
                             clientGUI.listClients(message.getclientList());
                             break;
                         default:
