@@ -25,7 +25,7 @@ public class ServerGUI extends JFrame implements ActionListener {
     private int usersOnline;
     private String nameInsert;
     private String ip;
-    private String port;
+    private int port;
     private int portNumber;
 
     private static final int FRAME_WIDTH = 1000;
@@ -60,15 +60,12 @@ public class ServerGUI extends JFrame implements ActionListener {
         ipLabel.setBounds(275, 25, 300, 100);
 
         portLabel = new JLabel();
-<<<<<<< HEAD
         //portNumber = Integer.parseInt(port.getText());
         portLabel.setText("Port: " + portNumber);
         portLabel.setBounds(500, 25, 300, 100);
-=======
         port = 804;
         portLabel.setText("Port: " + port);
         portLabel.setBounds(400, 25, 100, 100);
->>>>>>> 3c4fdd8ad4bf2c2638f5cea7068cea22fd5310e8
 
         usersOnlineLabel = new JLabel();
         usersOnline = 3204;
