@@ -52,6 +52,7 @@ public class ActiveClient extends Thread implements Serializable {
             connectedServer.display("Error. Could not create IO streams: " + e);
             return;
         }
+
         aliveTimer = new Timer();
         aliveTimer.schedule(new TimerTask() {
             @Override
@@ -146,6 +147,6 @@ public class ActiveClient extends Thread implements Serializable {
 
     @Override
     public String toString() {
-        return  "Id: " + id + " Username: " + username + "\nConnected since: " + connectedDate + "\n";
+        return  "Id: " + id + " Username: " + username + "\nConnected since: " + connectedDate + "\n" + socket.getInetAddress() + "\n";
     }
 }
