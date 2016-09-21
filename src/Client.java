@@ -26,6 +26,7 @@ public class Client {
 
     public boolean start(){
         try {
+
             socket = new Socket(serverAddress, serverPort);
             outputStream = new ObjectOutputStream(socket.getOutputStream());
             inputStream  = new ObjectInputStream(socket.getInputStream());

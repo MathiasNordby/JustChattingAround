@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 /**
  * Created by mikkel on 12-09-2016.
@@ -11,24 +12,24 @@ import java.util.ArrayList;
 public class Server {
 
     private static int clientId;
-    private ArrayList<ActiveClient> clientList;
     private int serverPort;
     private boolean running;
     private String serverUsername;
-    private ServerGUI serverGUI;
 
-    public Server(int serverPort, ServerGUI serverGUI, String serverUsername){
-        this.serverPort = serverPort;
-        clientList = new ArrayList<>();
-        this.serverUsername = serverUsername;
-        this.serverGUI = serverGUI;
-        this.serverGUI = serverGUI;
+    public Server(){
     }
 
     public void start() {
         running = true;
         try
         {
+            Scanner scan = new Scanner(System.in);
+            display("Insert ip/server address:");
+            serverAddress = scan.next();
+
+            display("Insert server port:");
+            serverPort = scan.nextInt();
+
             ServerSocket serverSocket = new ServerSocket(serverPort);
             display("Server up and running");
             while(running)
@@ -64,7 +65,7 @@ public class Server {
     }
 
     public void display(String textMessage) {
-        serverGUI.writeTextToGUI(textMessage);
+        System.out.println(textMessage);
     }
 
     public void broadcast(Message message) {
