@@ -33,10 +33,12 @@ public class Server {
             display("Server up and running");
             while(running)
             {
+                System.out.println("Klar til clients");
                 Socket socket = serverSocket.accept();
 
                 ActiveClient activeClientThread = new ActiveClient(socket, ++clientId, this);
                 clientList.add(activeClientThread);
+                System.out.println("Client added");
                 activeClientThread.start();
                 updateActiveClientList();
             }
@@ -71,7 +73,7 @@ public class Server {
                 clientList.remove(i);
                 display("Disconnected Client " + activeClient.getUsername() + " removed from list.");
             }
-            display(message.getUser_name() + " :" + message.getText());
+            display(message.getText());
         }
     }
 

@@ -37,18 +37,12 @@ public class Client {
                 display("Insert username:");
                 username = scan.next();
 
-                outputStream.writeBytes("JOIN {" + username + "}, {" + serverAddress + "}:{" + serverPort +"}");
+                outputStream.writeBytes("JOIN {" + username + "}, {" + serverAddress + "}:{" + serverPort +"}\n");
                 outputStream.flush();
                 System.out.println("TEST1");
                 BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
-                MessageClient message = null;
-                while(!in.ready()){
-
-                    message = new MessageClient(in.readLine());
-                }
+                MessageClient message = new MessageClient(in.readLine().toString());
                 System.out.println("TEST3");
-                System.out.println("TEST2" + in.readLine());
-
 
                 if(message.getType() == MessageClient.J_OK){
                     usernameInUse = false;
@@ -78,7 +72,10 @@ public class Client {
                     if(message.getType() == MessageClient.DATA){
                         display(message.getUser_name() + ": " + message.getText());
                     } else if (message.getType() == MessageClient.LIST){
-                        display(message.getText());
+                        display("Active users:");
+                        for (String user: message.getUserlist()){
+                            display("- " + user);
+                        }
                     }
                 } catch (IOException e) {
                     display("Could not read message: " + e);
@@ -120,7 +117,7 @@ public class Client {
 
                     if (inputText == "#EXIT"){
                         try {
-                            outputStream.writeBytes("QUIT");
+                            outputStream.writeBytes("QUIT\n");
                             outputStream.flush();
                         } catch (IOException e) {
                             display("Error when quiting: " + e);
@@ -128,7 +125,7 @@ public class Client {
                     }
                     else {
                         try {
-                            outputStream.writeBytes("DATA {" + username + "}: {" + inputText + "}");
+                            outputStream.writeBytes("DATA {" + username + "}: {" + inputText + "}\n");
                             outputStream.flush();
                         } catch (IOException e) {
                             display("Error when sending message: " + e);

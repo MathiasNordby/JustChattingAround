@@ -1,7 +1,5 @@
 package server;
 
-import client.MessageClient;
-
 import java.io.*;
 import java.net.Socket;
 import java.util.Date;
@@ -25,6 +23,7 @@ public class ActiveClient extends Thread {
         this.id = id;
         this.socket = socket;
         this.connectedServer = connectedServer;
+        System.out.println("Test");
 
         try
         {
@@ -32,20 +31,21 @@ public class ActiveClient extends Thread {
             outputStream = new DataOutputStream(socket.getOutputStream());
             inputStream  = new DataInputStream(socket.getInputStream());
             BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
-            MessageServer message = new MessageServer(in.readLine());
 
+            System.out.println("Before1");
+            MessageServer message = new MessageServer(in.readLine().toString());
             System.out.println("OMGFFFF");
             if (message.getType() == MessageServer.JOIN){
                 for (ActiveClient client: connectedServer.getClientList()){
                     if(client.getUsername().equalsIgnoreCase(message.getUser_name())) {
-                        outputStream.writeBytes("J_ERR");
+                        outputStream.writeBytes("J_ERR\n");
                         outputStream.flush();
                         close();
                         connectedServer.removeClient(id);
                         break;
                     }
                 }
-                outputStream.writeBytes("J_OK");
+                outputStream.writeBytes("J_OK\n");
                 outputStream.flush();
                 user_name = message.getUser_name();
 
@@ -68,7 +68,7 @@ public class ActiveClient extends Thread {
             public void run() {
                 close();
                 connectedServer.removeClient(id);
-                connectedServer.broadcast(new MessageServer(user_name, " disconnected by dropout"));
+                connectedServer.broadcast(new MessageServer(user_name, " disconnected by dropout\n"));
                 connectedServer.updateActiveClientList();
             }
         }, 70000);
@@ -100,7 +100,7 @@ public class ActiveClient extends Thread {
                     break;
                 case MessageServer.ALVE:
                     alive();
-                    connectedServer.display(message.getUser_name() + ": Is alive");
+                    connectedServer.display(message.getUser_name() + ": Is alive\n");
                     break;
                 default:
                     break;
@@ -127,7 +127,7 @@ public class ActiveClient extends Thread {
         }
         try {
             if(message.getType() == MessageServer.DATA){
-                outputStream.writeBytes("DATA {" + message.getUser_name() +"}: {" + message.getText() + "}");
+                outputStream.writeBytes("DATA {" + message.getUser_name() +"}: {" + message.getText() + "}\n");
                 outputStream.flush();
             }
             else if (message.getType() == MessageServer.LIST){
@@ -151,7 +151,7 @@ public class ActiveClient extends Thread {
                 @Override
                 public void run() {
                     close();
-                    connectedServer.broadcast(new MessageServer(user_name, " disconnected by dropout"));
+                    connectedServer.broadcast(new MessageServer(user_name, " disconnected by dropout\n"));
                 }
             }, 70000);
         }

@@ -1,7 +1,7 @@
 package client;
 
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Mathias on 21-09-2016.
@@ -19,13 +19,18 @@ public class MessageClient {
             type = J_ERR;
         } else if (msg.startsWith("DATA")){
             type = DATA;
-            String[] results = msg.split("\\}\\{");
-            user_name = results[0];
-            text = results[1];
+            Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
+            Matcher matcher = pattern.matcher(msg);
+            matcher.find();
+            user_name = matcher.group(1);
+            matcher.find();
+            text = matcher.group(1);
         } else if (msg.startsWith("LIST")){
             type = LIST;
-            String[] results = msg.split("\\}\\{");
-            userlist = results[0].split("\\\\s+");
+            Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
+            Matcher matcher = pattern.matcher(msg);
+            matcher.find();
+            userlist = matcher.group(1).split("\\\\s+");
         } else {
             type = FAIL;
         }
