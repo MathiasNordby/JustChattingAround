@@ -12,9 +12,8 @@ public class Client {
     private Socket socket;
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
-    private String serverAddress, username;
-    private int serverPort;
     private boolean connected;
+    private String username;
 
     public Client (){
 
@@ -24,10 +23,10 @@ public class Client {
         try {
             Scanner scan = new Scanner(System.in);
             display("Insert ip/server address:");
-            serverAddress = scan.next();
+            String serverAddress = scan.next();
 
             display("Insert server port:");
-            serverPort = scan.nextInt();
+            int serverPort = scan.nextInt();
 
             socket = new Socket(serverAddress, serverPort);
             outputStream = new DataOutputStream(socket.getOutputStream());
@@ -36,21 +35,30 @@ public class Client {
             Boolean usernameInUse = true;
             while (usernameInUse){
                 display("Insert username:");
-                username = scan.nextLine();
-                //Write join here with username
-                outputStream.writeBytes("");
-                BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
+                username = scan.next();
 
-                //change if to check if username is available
-                //If available
-                if(in.ready()){
+                outputStream.writeBytes("JOIN {" + username + "}, {" + serverAddress + "}:{" + serverPort +"}");
+                outputStream.flush();
+                System.out.println("TEST1");
+                BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
+                MessageClient message = null;
+                while(!in.ready()){
+
+                    message = new MessageClient(in.readLine());
+                }
+                System.out.println("TEST3");
+                System.out.println("TEST2" + in.readLine());
+
+
+                if(message.getType() == MessageClient.J_OK){
                     usernameInUse = false;
+                    display("Login successful, welcome to the chat " + username);
                 }
-                //If taken
-                else if (in.ready()){
-                    display("Username " + username + " already in use");
+
+                else if (message.getType() == MessageClient.J_ERR){
+                    display("Username " + username + " already in use, try again");
                 }
-                //If none of above apply then
+
                 else{
                     display("Unknown username error");
                 }
@@ -65,7 +73,16 @@ public class Client {
         Thread serverListener = new Thread(() -> {
             while(connected) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
-                //Check message if data(text) then print
+                try {
+                    MessageClient message = new MessageClient(in.readLine());
+                    if(message.getType() == MessageClient.DATA){
+                        display(message.getUser_name() + ": " + message.getText());
+                    } else if (message.getType() == MessageClient.LIST){
+                        display(message.getText());
+                    }
+                } catch (IOException e) {
+                    display("Could not read message: " + e);
+                }
                 System.out.println("");
             }
         }
@@ -76,15 +93,15 @@ public class Client {
             while(connected) {
                 try {
                     Thread.sleep(60000);
-                    //Insert heart beat message here
-                    outputStream.writeBytes("");
+                    outputStream.writeBytes("ALVE");
+                    outputStream.flush();
                 }
                 catch(IOException e) {
-                    display("Server timed out1: " + e);
+                    display("Server timed out: " + e);
                     disconnect();
                     break;
                 } catch (InterruptedException e) {
-                    display("Server timed out2: " + e);
+                    display("Server timed out: " + e);
                     disconnect();
                     break;
                 }
@@ -99,8 +116,23 @@ public class Client {
                     System.out.print("Insert text: ");
                     Scanner scan = new Scanner(System.in);
 
-                    if (scan.nextLine() == "#LIST"){
+                    String inputText = scan.nextLine();
 
+                    if (inputText == "#EXIT"){
+                        try {
+                            outputStream.writeBytes("QUIT");
+                            outputStream.flush();
+                        } catch (IOException e) {
+                            display("Error when quiting: " + e);
+                        }
+                    }
+                    else {
+                        try {
+                            outputStream.writeBytes("DATA {" + username + "}: {" + inputText + "}");
+                            outputStream.flush();
+                        } catch (IOException e) {
+                            display("Error when sending message: " + e);
+                        }
                     }
                 }
             }

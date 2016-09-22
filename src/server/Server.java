@@ -1,6 +1,5 @@
 package server;
 
-import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -14,18 +13,18 @@ public class Server {
     private static int clientId;
     private int serverPort;
     private boolean running;
-    private String serverUsername;
+    private ArrayList<ActiveClient> clientList;
 
     public Server(){
+
     }
 
     public void start() {
         running = true;
+        clientList = new ArrayList<>();
         try
         {
             Scanner scan = new Scanner(System.in);
-            display("Insert ip/server address:");
-            serverAddress = scan.next();
 
             display("Insert server port:");
             serverPort = scan.nextInt();
@@ -35,9 +34,6 @@ public class Server {
             while(running)
             {
                 Socket socket = serverSocket.accept();
-
-                if(!running)
-                    break;
 
                 ActiveClient activeClientThread = new ActiveClient(socket, ++clientId, this);
                 clientList.add(activeClientThread);
@@ -68,20 +64,15 @@ public class Server {
         System.out.println(textMessage);
     }
 
-    public void broadcast(Message message) {
+    public void broadcast(MessageServer message) {
         for (int i = clientList.size(); --i >= 0; ) {
             ActiveClient activeClient = clientList.get(i);
             if (!activeClient.writeToThisClient(message)) {
                 clientList.remove(i);
                 display("Disconnected Client " + activeClient.getUsername() + " removed from list.");
             }
+            display(message.getUser_name() + " :" + message.getText());
         }
-        if(message.getType() == Message.DATA){
-            display(message.getUsername() + " :" + message.getMessage());
-        } else if(message.getType() == Message.LIST){
-            serverGUI.listClients(message.getclientList());
-        }
-
     }
 
     public void removeClient(int id) {
@@ -95,15 +86,20 @@ public class Server {
     }
 
     public void updateActiveClientList(){
-        broadcast(new Message(Message.LIST, clientList));
+        String list = "LIST {";
+        for (ActiveClient client: clientList){
+            list = list + client.getUsername() + " ";
+        }
+        list = list + "}";
+        broadcast(new MessageServer(MessageServer.LIST, list));
     }
 
     public ArrayList<ActiveClient> getClientList() {
         return clientList;
     }
 
-    public String getServerUsername() {
-        return serverUsername;
+    public static void main(String[] args) {
+        new Server().start();
     }
 }
 
