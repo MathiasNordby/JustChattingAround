@@ -33,13 +33,12 @@ public class Server {
             display("Server up and running");
             while(running)
             {
-                System.out.println("Klar til clients");
                 Socket socket = serverSocket.accept();
 
                 ActiveClient activeClientThread = new ActiveClient(socket, ++clientId, this);
                 clientList.add(activeClientThread);
-                System.out.println("Client added");
                 activeClientThread.start();
+                Thread.sleep(100);
                 updateActiveClientList();
             }
             serverSocket.close();
@@ -69,11 +68,14 @@ public class Server {
     public void broadcast(MessageServer message) {
         for (int i = clientList.size(); --i >= 0; ) {
             ActiveClient activeClient = clientList.get(i);
+            System.out.println("Broadcasting to: " + activeClient.getUsername());
             if (!activeClient.writeToThisClient(message)) {
                 clientList.remove(i);
                 display("Disconnected Client " + activeClient.getUsername() + " removed from list.");
             }
-            display(message.getText());
+        }
+        if(message.getType() == MessageServer.DATA){
+            display(message.getUser_name() + ": " + message.getText());
         }
     }
 
@@ -92,7 +94,7 @@ public class Server {
         for (ActiveClient client: clientList){
             list = list + client.getUsername() + " ";
         }
-        list = list + "}";
+        list = list + "}\n";
         broadcast(new MessageServer(MessageServer.LIST, list));
     }
 

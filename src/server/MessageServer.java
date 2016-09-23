@@ -12,33 +12,32 @@ public class MessageServer {
     private String text, user_name;
 
     public MessageServer(String msg) {
-        System.out.println("In message server");
-        if(msg.startsWith("JOIN")){
-            System.out.println("JOIN");
-            type = JOIN;
-            Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
-            Matcher matcher = pattern.matcher(msg);
-            matcher.find();
-            user_name = matcher.group(1);
-        } else if (msg.startsWith("ALVE")){
-            System.out.println("ALVE");
-            type = ALVE;
-        } else if (msg.startsWith("DATA")){
-            System.out.println("DATA");
-            type = DATA;
-            Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
-            Matcher matcher = pattern.matcher(msg);
-            matcher.find();
-            user_name = matcher.group(1);
-            matcher.find();
-            text = matcher.group(1);
-        } else if (msg.startsWith("QUIT")){
-            System.out.println("QUIT");
-            type = QUIT;
+        if(msg != null){
+            if(msg.startsWith("JOIN")){
+                type = JOIN;
+                Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
+                Matcher matcher = pattern.matcher(msg);
+                matcher.find();
+                user_name = matcher.group(1);
+            } else if (msg.equals("ALVE")){
+                type = ALVE;
+            } else if (msg.startsWith("DATA")){
+                type = DATA;
+                Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
+                Matcher matcher = pattern.matcher(msg);
+                matcher.find();
+                user_name = matcher.group(1);
+                matcher.find();
+                text = matcher.group(1);
+            } else if (msg.equals("QUIT")){
+                type = QUIT;
+            } else {
+                type = FAIL;
+            }
         } else {
-            System.out.println("FAIL");
             type = FAIL;
         }
+
     }
 
     public MessageServer(String user_name, String text){

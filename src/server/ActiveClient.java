@@ -23,36 +23,43 @@ public class ActiveClient extends Thread {
         this.id = id;
         this.socket = socket;
         this.connectedServer = connectedServer;
-        System.out.println("Test");
 
         try
         {
-            System.out.println("Before");
             outputStream = new DataOutputStream(socket.getOutputStream());
             inputStream  = new DataInputStream(socket.getInputStream());
-            BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
+            Boolean usernameInUse = true;
+            while (usernameInUse){
+                BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
 
-            System.out.println("Before1");
-            MessageServer message = new MessageServer(in.readLine().toString());
-            System.out.println("OMGFFFF");
-            if (message.getType() == MessageServer.JOIN){
-                for (ActiveClient client: connectedServer.getClientList()){
-                    if(client.getUsername().equalsIgnoreCase(message.getUser_name())) {
-                        outputStream.writeBytes("J_ERR\n");
-                        outputStream.flush();
-                        close();
-                        connectedServer.removeClient(id);
-                        break;
+                Boolean found = false;
+                MessageServer message = new MessageServer(in.readLine().toString());
+                if (message.getType() == MessageServer.JOIN){
+                    for (ActiveClient client: connectedServer.getClientList()){
+                        if(client.getUsername().equalsIgnoreCase(message.getUser_name())) {
+                            outputStream.writeBytes("J_ERR\n");
+                            outputStream.flush();
+                            found = true;
+                        }
                     }
-                }
-                outputStream.writeBytes("J_OK\n");
-                outputStream.flush();
-                user_name = message.getUser_name();
+                    if (!found){
+                        user_name = message.getUser_name();
+                        outputStream.writeBytes("J_OK\n");
+                        outputStream.flush();
+                        connectedServer.display(user_name + " connected.");
+                        connectedDate = new Date();
+                        alive();
+                        usernameInUse = false;
+                    }
 
-                //Maybe broadcast this??
-                connectedServer.display(user_name + " connected.");
-                connectedDate = new Date();
+                } else {
+                    connectedServer.display("Received invalid message");
+                    close();
+                    connectedServer.removeClient(id);
+                }
+
             }
+
         }
         catch (IOException e) {
 
@@ -62,16 +69,6 @@ public class ActiveClient extends Thread {
             return;
         }
 
-        aliveTimer = new Timer();
-        aliveTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                close();
-                connectedServer.removeClient(id);
-                connectedServer.broadcast(new MessageServer(user_name, " disconnected by dropout\n"));
-                connectedServer.updateActiveClientList();
-            }
-        }, 70000);
     }
 
     public synchronized void run() {
@@ -100,7 +97,7 @@ public class ActiveClient extends Thread {
                     break;
                 case MessageServer.ALVE:
                     alive();
-                    connectedServer.display(message.getUser_name() + ": Is alive\n");
+                    connectedServer.display("<" + user_name + "> Is alive");
                     break;
                 default:
                     break;
@@ -124,11 +121,15 @@ public class ActiveClient extends Thread {
         if(socket.isClosed()) {
             close();
             return false;
+
         }
         try {
             if(message.getType() == MessageServer.DATA){
-                outputStream.writeBytes("DATA {" + message.getUser_name() +"}: {" + message.getText() + "}\n");
-                outputStream.flush();
+                //So the person texting dont recive his own message
+                if(!message.getUser_name().equals(user_name)){
+                    outputStream.writeBytes("DATA {" + message.getUser_name() +"}: {" + message.getText() + "}\n");
+                    outputStream.flush();
+                }
             }
             else if (message.getType() == MessageServer.LIST){
                 outputStream.writeBytes(message.getText());

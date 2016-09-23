@@ -34,15 +34,14 @@ public class Client {
 
             Boolean usernameInUse = true;
             while (usernameInUse){
-                display("Insert username:");
+                display("Insert username: ");
                 username = scan.next();
 
+                System.out.println("Username: " + username);
                 outputStream.writeBytes("JOIN {" + username + "}, {" + serverAddress + "}:{" + serverPort +"}\n");
                 outputStream.flush();
-                System.out.println("TEST1");
                 BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
                 MessageClient message = new MessageClient(in.readLine().toString());
-                System.out.println("TEST3");
 
                 if(message.getType() == MessageClient.J_OK){
                     usernameInUse = false;
@@ -68,19 +67,22 @@ public class Client {
             while(connected) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
                 try {
+
                     MessageClient message = new MessageClient(in.readLine());
                     if(message.getType() == MessageClient.DATA){
                         display(message.getUser_name() + ": " + message.getText());
                     } else if (message.getType() == MessageClient.LIST){
-                        display("Active users:");
+                        display("\nActive users:");
                         for (String user: message.getUserlist()){
                             display("- " + user);
                         }
                     }
                 } catch (IOException e) {
-                    display("Could not read message: " + e);
+                    if (connected){
+                        display("Lost server connection: " + e);
+                        disconnect();
+                    }
                 }
-                System.out.println("");
             }
         }
         );
@@ -89,18 +91,22 @@ public class Client {
         Thread heartBeat = new Thread(()-> {
             while(connected) {
                 try {
-                    Thread.sleep(60000);
-                    outputStream.writeBytes("ALVE");
+                    Thread.sleep(55000);
+                    outputStream.writeBytes("ALVE\n");
                     outputStream.flush();
                 }
                 catch(IOException e) {
-                    display("Server timed out: " + e);
-                    disconnect();
-                    break;
+                    if(connected){
+                        display("Server timed out: " + e);
+                        disconnect();
+                        break;
+                    }
                 } catch (InterruptedException e) {
-                    display("Server timed out: " + e);
-                    disconnect();
-                    break;
+                    if(connected){
+                        display("Server timed out: " + e);
+                        disconnect();
+                        break;
+                    }
                 }
             }
         });
@@ -110,15 +116,17 @@ public class Client {
         Thread scannerListner = new Thread(()-> {
             while(connected) {
                 if(connected){
-                    System.out.print("Insert text: ");
+
                     Scanner scan = new Scanner(System.in);
 
                     String inputText = scan.nextLine();
 
-                    if (inputText == "#EXIT"){
+                    System.out.print("\b\rMe: " + inputText);
+                    if (inputText.equals("#EXIT")){
                         try {
                             outputStream.writeBytes("QUIT\n");
                             outputStream.flush();
+                            disconnect();
                         } catch (IOException e) {
                             display("Error when quiting: " + e);
                         }
@@ -155,7 +163,7 @@ public class Client {
             if(socket != null){
                 socket.close();
             }
-            display("Successfully disconnected");
+            display("Successfully disconnected. Restarting.");
             start();
         }
         catch(Exception ex){

@@ -13,24 +13,30 @@ public class MessageClient {
     private String[] userlist;
 
     public MessageClient(String msg) {
-        if(msg.startsWith("J_OK")){
-            type = J_OK;
-        } else if (msg.startsWith("J_ERR")){
-            type = J_ERR;
-        } else if (msg.startsWith("DATA")){
-            type = DATA;
-            Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
-            Matcher matcher = pattern.matcher(msg);
-            matcher.find();
-            user_name = matcher.group(1);
-            matcher.find();
-            text = matcher.group(1);
-        } else if (msg.startsWith("LIST")){
-            type = LIST;
-            Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
-            Matcher matcher = pattern.matcher(msg);
-            matcher.find();
-            userlist = matcher.group(1).split("\\\\s+");
+        if(msg != null) {
+            type = FAIL;
+
+            if (msg.equals("J_OK")) {
+                type = J_OK;
+            } else if (msg.equals("J_ERR")) {
+                type = J_ERR;
+            } else if (msg.startsWith("DATA")) {
+                type = DATA;
+                Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
+                Matcher matcher = pattern.matcher(msg);
+                matcher.find();
+                user_name = matcher.group(1);
+                matcher.find();
+                text = matcher.group(1);
+            } else if (msg.startsWith("LIST")) {
+                type = LIST;
+                Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
+                Matcher matcher = pattern.matcher(msg);
+                matcher.find();
+                userlist = matcher.group(1).split("\\s+");
+            } else {
+                type = FAIL;
+            }
         } else {
             type = FAIL;
         }
