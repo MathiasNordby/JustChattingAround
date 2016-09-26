@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
- * Created by mikkel on 12-09-2016.
+ * Created by Mikkel on 12-09-2016.
  */
 public class Server {
 
@@ -15,24 +15,28 @@ public class Server {
     private boolean running;
     private ArrayList<ActiveClient> clientList;
 
-    public Server(){
+    public Server() {
 
     }
 
     public void start() {
         running = true;
         clientList = new ArrayList<>();
-        try
-        {
+        try {
             Scanner scan = new Scanner(System.in);
 
-            display("Insert server port:");
-            serverPort = scan.nextInt();
+            Boolean verfiyInput = false;
+            while (!verfiyInput) {
+                display("Insert server port:");
+                serverPort = scan.nextInt();
+                if (portVerify(serverPort)) {
+                    verfiyInput = true;
+                }
+            }
 
             ServerSocket serverSocket = new ServerSocket(serverPort);
             display("Server up and running");
-            while(running)
-            {
+            while (running) {
                 Socket socket = serverSocket.accept();
 
                 ActiveClient activeClientThread = new ActiveClient(socket, ++clientId, this);
@@ -42,11 +46,10 @@ public class Server {
                 updateActiveClientList();
             }
             serverSocket.close();
-            for(ActiveClient activeClient : clientList){
+            for (ActiveClient activeClient : clientList) {
                 activeClient.close();
             }
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             display("Error when closing the server and clients: " + e);
         }
 
@@ -56,8 +59,7 @@ public class Server {
         running = false;
         try {
             new Socket("localhost", serverPort);
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
         }
     }
 
@@ -68,20 +70,19 @@ public class Server {
     public void broadcast(MessageServer message) {
         for (int i = clientList.size(); --i >= 0; ) {
             ActiveClient activeClient = clientList.get(i);
-            System.out.println("Broadcasting to: " + activeClient.getUsername());
             if (!activeClient.writeToThisClient(message)) {
                 clientList.remove(i);
                 display("Disconnected Client " + activeClient.getUsername() + " removed from list.");
             }
         }
-        if(message.getType() == MessageServer.DATA){
+        if (message.getType() == MessageServer.DATA) {
             display(message.getUser_name() + ": " + message.getText());
         }
     }
 
     public void removeClient(int id) {
-        for(ActiveClient activeClient : clientList){
-            if(activeClient.getId() == id) {
+        for (ActiveClient activeClient : clientList) {
+            if (activeClient.getId() == id) {
                 clientList.remove(activeClient.getId());
                 updateActiveClientList();
                 return;
@@ -89,13 +90,22 @@ public class Server {
         }
     }
 
-    public void updateActiveClientList(){
-        String list = "LIST {";
-        for (ActiveClient client: clientList){
+    public void updateActiveClientList() {
+        String list = "LIST ";
+        for (ActiveClient client : clientList) {
             list = list + client.getUsername() + " ";
         }
-        list = list + "}\n";
+        list = list + "\n";
         broadcast(new MessageServer(MessageServer.LIST, list));
+    }
+
+    public boolean portVerify(int port) {
+        if (!(port <= 65535 && port >= 0)) {
+            display("Insert valid port number. Note only numbers allowed, between 0-65535.");
+            return false;
+        } else {
+            return true;
+        }
     }
 
     public ArrayList<ActiveClient> getClientList() {

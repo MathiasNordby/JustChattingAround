@@ -1,35 +1,36 @@
 package server;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
- * Created by Tanja on 21/09/2016.
+ * Created by Tanja + Mikkel on 21/09/2016.
  */
 public class MessageServer {
     public static final int JOIN = 1, ALVE = 2, DATA = 3, QUIT = 4, LIST = 5, FAIL = 6;
-    private int type;
-    private String text, user_name;
+    private int type, port;
+    private String text, user_name, ip, inputString;
 
     public MessageServer(String msg) {
-        if(msg != null){
-            if(msg.startsWith("JOIN")){
+        inputString = msg;
+        if (msg != null) {
+            if (msg.startsWith("JOIN")) {
                 type = JOIN;
-                Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
-                Matcher matcher = pattern.matcher(msg);
-                matcher.find();
-                user_name = matcher.group(1);
-            } else if (msg.equals("ALVE")){
+                String[] messageSplit = msg.split("\\s|,+\\s|:");
+                user_name = messageSplit[1];
+                ip = messageSplit[2];
+                try {
+                    port = Integer.parseInt(messageSplit[3]);
+                } catch (NumberFormatException e) {
+                    type = FAIL;
+                }
+            } else if (msg.equals("ALVE")) {
                 type = ALVE;
-            } else if (msg.startsWith("DATA")){
+            } else if (msg.startsWith("DATA")) {
                 type = DATA;
-                Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
-                Matcher matcher = pattern.matcher(msg);
-                matcher.find();
-                user_name = matcher.group(1);
-                matcher.find();
-                text = matcher.group(1);
-            } else if (msg.equals("QUIT")){
+                String[] messageSplit = msg.split("DATA\\s|:\\s");
+
+                user_name = messageSplit[1];
+                text = messageSplit[2];
+            } else if (msg.equals("QUIT")) {
                 type = QUIT;
             } else {
                 type = FAIL;
@@ -40,13 +41,13 @@ public class MessageServer {
 
     }
 
-    public MessageServer(String user_name, String text){
+    public MessageServer(String user_name, String text) {
         type = DATA;
         this.user_name = user_name;
         this.text = text;
     }
 
-    public MessageServer(int type, String text){
+    public MessageServer(int type, String text) {
         this.type = type;
         this.text = text;
     }
@@ -61,5 +62,17 @@ public class MessageServer {
 
     public String getUser_name() {
         return user_name;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public String getInputString() {
+        return inputString;
     }
 }

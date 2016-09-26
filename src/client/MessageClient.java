@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by Mathias on 21-09-2016.
+ * Created by Mathias + Mikkel on 21-09-2016.
  */
 public class MessageClient {
     public static final int J_OK = 1, J_ERR = 2, DATA = 3, LIST = 4, FAIL = 5;
@@ -13,7 +13,7 @@ public class MessageClient {
     private String[] userlist;
 
     public MessageClient(String msg) {
-        if(msg != null) {
+        if (msg != null) {
             type = FAIL;
 
             if (msg.equals("J_OK")) {
@@ -22,18 +22,14 @@ public class MessageClient {
                 type = J_ERR;
             } else if (msg.startsWith("DATA")) {
                 type = DATA;
-                Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
-                Matcher matcher = pattern.matcher(msg);
-                matcher.find();
-                user_name = matcher.group(1);
-                matcher.find();
-                text = matcher.group(1);
+                String[] messageSplit = msg.split("DATA\\s|:\\s");
+                user_name = messageSplit[1];
+                text = messageSplit[2];
             } else if (msg.startsWith("LIST")) {
                 type = LIST;
-                Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
-                Matcher matcher = pattern.matcher(msg);
-                matcher.find();
-                userlist = matcher.group(1).split("\\s+");
+                String[] messageSplit = msg.split("LIST\\s");
+                //Made double split because else there would be 1 empty string at [0]
+                userlist = messageSplit[1].split("\\s");
             } else {
                 type = FAIL;
             }
