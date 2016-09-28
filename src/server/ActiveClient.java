@@ -137,7 +137,7 @@ public class ActiveClient extends Thread {
                     outputStream.flush();
                 }
             } else if (message.getType() == MessageServer.LIST) {
-                outputStream.writeBytes(message.getText());
+                outputStream.writeBytes(message.getInputString());
                 outputStream.flush();
             }
 
@@ -181,7 +181,7 @@ public class ActiveClient extends Thread {
 
     public boolean dataVerify(String data) {
         //See @usernameVerify for regex explain
-        String pattern = "^[a-zA-Z0-9_ -]{1,250}$";
+        String pattern = "^[a-zA-Z0-9_ -.,:=+/()!?@]{1,250}$";
         return data.matches(pattern);
     }
 

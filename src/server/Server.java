@@ -95,7 +95,6 @@ public class Server {
         for (ActiveClient client : clientList) {
             list = list + client.getUsername() + " ";
         }
-        list = list + "\n";
         broadcast(new MessageServer(MessageServer.LIST, list));
     }
 

@@ -14,7 +14,7 @@ public class MessageServer {
         if (msg != null) {
             if (msg.startsWith("JOIN")) {
                 type = JOIN;
-                String[] messageSplit = msg.split("\\s|,+\\s|:");
+                String[] messageSplit = msg.split("JOIN\\s|,\\s|:");
                 user_name = messageSplit[1];
                 ip = messageSplit[2];
                 try {
@@ -47,9 +47,9 @@ public class MessageServer {
         this.text = text;
     }
 
-    public MessageServer(int type, String text) {
+    public MessageServer(int type, String inputString) {
         this.type = type;
-        this.text = text;
+        this.inputString = inputString;
     }
 
     public int getType() {

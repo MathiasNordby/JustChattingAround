@@ -16,6 +16,7 @@ public class Client {
     private DataOutputStream outputStream;
     private boolean connected;
     private String username;
+    private volatile Scanner scan;
 
     public Client() {
 
@@ -24,7 +25,7 @@ public class Client {
     public void start() {
         try {
             Boolean validInput = false;
-            Scanner scan = new Scanner(System.in);
+            scan = new Scanner(System.in);
             String serverAddress = "";
             while (!validInput) {
                 display("Insert ip/server address:");
@@ -192,7 +193,6 @@ public class Client {
                 socket.close();
             }
             display("Successfully disconnected. Restarting.");
-            Thread.sleep(100);
             start();
         } catch (Exception ex) {
             display("Exception when disconnecting: " + ex);
@@ -244,7 +244,7 @@ public class Client {
 
     public boolean dataVerify(String data) {
         //See @usernameVerify for regex explain
-        String pattern = "^[a-zA-Z0-9_ -]{1,250}$";
+        String pattern = "^[a-zA-Z0-9_ -.,:=+/()!?@]{1,250}$";
         if (data.matches(pattern)) {
             return true;
         } else {
