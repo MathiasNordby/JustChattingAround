@@ -147,7 +147,7 @@ public class Client {
                         }
 
                         display("\b\rMe: " + inputText);
-                        if (inputText.equals("#EXIT")) {
+                        if (inputText.equals("EXIT")) {
                             try {
                                 outputStream.writeBytes("QUIT\n");
                                 outputStream.flush();
@@ -244,7 +244,7 @@ public class Client {
 
     public boolean dataVerify(String data) {
         //See @usernameVerify for regex explain
-        String pattern = "^[a-zA-Z0-9_-]{1,250}$";
+        String pattern = "^[a-zA-Z0-9_ -]{1,250}$";
         if (data.matches(pattern)) {
             return true;
         } else {

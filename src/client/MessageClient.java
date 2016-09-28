@@ -23,8 +23,12 @@ public class MessageClient {
             } else if (msg.startsWith("DATA")) {
                 type = DATA;
                 String[] messageSplit = msg.split("DATA\\s|:\\s");
-                user_name = messageSplit[1];
-                text = messageSplit[2];
+                if(messageSplit.length >= 3){
+                    user_name = messageSplit[1];
+                    text = messageSplit[2];
+                } else{
+                    type = FAIL;
+                }
             } else if (msg.startsWith("LIST")) {
                 type = LIST;
                 String[] messageSplit = msg.split("LIST\\s");
