@@ -32,6 +32,7 @@ public class ActiveClient extends Thread {
                 BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
 
                 Boolean found = false;
+
                 MessageServer message = new MessageServer(in.readLine().toString());
                 if (message.getType() == MessageServer.JOIN) {
                     if (!usernameVerify(message.getUser_name())) {
@@ -91,7 +92,7 @@ public class ActiveClient extends Thread {
                     if (dataVerify(message.getText())) {
                         connectedServer.broadcast(message);
                     } else {
-                        writeToThisClient(new MessageServer("Admin", "Insert valid data text. Rules: 1-250 chars long, only chars, digits, ‘-‘ and ‘_’ allowed"));
+                        writeToThisClient(new MessageServer("Admin", "Insert valid data text. Rules: 1-250 chars long, only chars, digits, ‘-‘ and ‘_’ allowed"));
                     }
                     break;
                 case MessageServer.QUIT:
@@ -99,6 +100,9 @@ public class ActiveClient extends Thread {
                     connected = false;
                     connectedServer.broadcast(new MessageServer(user_name, " disconnected by own will"));
                     connectedServer.updateActiveClientList();
+                    if(aliveTimer != null){
+                        aliveTimer.cancel();
+                    }
                     break;
                 case MessageServer.ALVE:
                     alive();
@@ -133,6 +137,11 @@ public class ActiveClient extends Thread {
                 //So the person texting dont recive his own message
                 if (!message.getUser_name().equals(user_name)) {
                     String temp = "DATA " + message.getUser_name() + ": " + message.getText() + "\n";
+                    outputStream.writeBytes(temp);
+                    outputStream.flush();
+                } else {
+                    //Maybe a bit overkill, but might be proper to use the object
+                    String temp = "DATA " + "Me" + ": " + message.getText() + "\n";
                     outputStream.writeBytes(temp);
                     outputStream.flush();
                 }

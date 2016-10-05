@@ -102,6 +102,7 @@ public class Server {
         for (ActiveClient client : clientList) {
             list = list + client.getUsername() + " ";
         }
+        list = list + "\n";
         //Broadcaster List, til LIST i MessageServer
         broadcast(new MessageServer(MessageServer.LIST, list));
     }

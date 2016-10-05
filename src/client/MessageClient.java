@@ -9,10 +9,11 @@ import java.util.regex.Pattern;
 public class MessageClient {
     public static final int J_OK = 1, J_ERR = 2, DATA = 3, LIST = 4, FAIL = 5;
     private int type;
-    private String text, user_name;
+    private String text, user_name, inputString;
     private String[] userlist;
 
     public MessageClient(String msg) {
+        inputString = msg;
         if (msg != null) {
             type = FAIL;
 
@@ -31,9 +32,15 @@ public class MessageClient {
                 }
             } else if (msg.startsWith("LIST")) {
                 type = LIST;
+
                 String[] messageSplit = msg.split("LIST\\s");
-                //Made double split because else there would be 1 empty string at [0]
-                userlist = messageSplit[1].split("\\s");
+                if(messageSplit.length >= 2){
+                    //Made double split because else there would be 1 empty string at [0]
+                    userlist = messageSplit[1].split("\\s");
+                } else {
+                    type = FAIL;
+                }
+
             } else {
                 type = FAIL;
             }
@@ -56,5 +63,9 @@ public class MessageClient {
 
     public String[] getUserlist() {
         return userlist;
+    }
+
+    public String getInputString() {
+        return inputString;
     }
 }

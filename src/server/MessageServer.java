@@ -15,11 +15,15 @@ public class MessageServer {
             if (msg.startsWith("JOIN")) {
                 type = JOIN;
                 String[] messageSplit = msg.split("JOIN\\s|,\\s|:");
-                user_name = messageSplit[1];
-                ip = messageSplit[2];
-                try {
-                    port = Integer.parseInt(messageSplit[3]);
-                } catch (NumberFormatException e) {
+                if(messageSplit.length <= 4) {
+                    user_name = messageSplit[1];
+                    ip = messageSplit[2];
+                    try {
+                        port = Integer.parseInt(messageSplit[3]);
+                    } catch (NumberFormatException e) {
+                        type = FAIL;
+                    }
+                } else {
                     type = FAIL;
                 }
             } else if (msg.equals("ALVE")) {
@@ -27,9 +31,12 @@ public class MessageServer {
             } else if (msg.startsWith("DATA")) {
                 type = DATA;
                 String[] messageSplit = msg.split("DATA\\s|:\\s");
-
-                user_name = messageSplit[1];
-                text = messageSplit[2];
+                if(messageSplit.length >= 3){
+                    user_name = messageSplit[1];
+                    text = messageSplit[2];
+                } else {
+                    type = FAIL;
+                }
             } else if (msg.equals("QUIT")) {
                 type = QUIT;
             } else {
@@ -74,5 +81,9 @@ public class MessageServer {
 
     public String getInputString() {
         return inputString;
+    }
+
+    public void setUser_name(String user_name) {
+        this.user_name = user_name;
     }
 }

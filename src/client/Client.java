@@ -107,7 +107,7 @@ public class Client {
             Thread heartBeat = new Thread(() -> {
                 while (connected) {
                     try {
-                        Thread.sleep(55000);
+                        Thread.sleep(60000);
                         outputStream.writeBytes("ALVE\n");
                         outputStream.flush();
                     } catch (IOException e) {
@@ -146,8 +146,6 @@ public class Client {
                             }
                             //Can we delete stuff in console??
                         }
-
-                        display("\b\rMe: " + inputText);
                         if (inputText.equals("EXIT")) {
                             try {
                                 outputStream.writeBytes("QUIT\n");
