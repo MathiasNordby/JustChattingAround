@@ -9,16 +9,20 @@ public class MessageServer {
     private int type, port;
     private String text, user_name, ip, inputString;
 
+    //
     public MessageServer(String msg) {
         inputString = msg;
         if (msg != null) {
+            //
             if (msg.startsWith("JOIN")) {
                 type = JOIN;
                 String[] messageSplit = msg.split("JOIN\\s|,\\s|:");
+                //
                 if(messageSplit.length <= 4) {
                     user_name = messageSplit[1];
                     ip = messageSplit[2];
                     try {
+                        //
                         port = Integer.parseInt(messageSplit[3]);
                     } catch (NumberFormatException e) {
                         type = FAIL;
@@ -26,8 +30,10 @@ public class MessageServer {
                 } else {
                     type = FAIL;
                 }
+                //
             } else if (msg.equals("ALVE")) {
                 type = ALVE;
+                //
             } else if (msg.startsWith("DATA")) {
                 type = DATA;
                 String[] messageSplit = msg.split("DATA\\s|:\\s");
@@ -37,6 +43,7 @@ public class MessageServer {
                 } else {
                     type = FAIL;
                 }
+                //
             } else if (msg.equals("QUIT")) {
                 type = QUIT;
             } else {

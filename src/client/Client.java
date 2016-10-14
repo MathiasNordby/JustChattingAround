@@ -88,6 +88,7 @@ public class Client {
                     BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
                     try {
 
+                        //
                         MessageClient message = new MessageClient(in.readLine());
                         if (message.getType() == MessageClient.DATA) {
                             display(message.getUser_name() + ": " + message.getText());
@@ -109,6 +110,7 @@ public class Client {
             );
             serverListener.start();
 
+            //
             Thread heartBeat = new Thread(() -> {
                 while (connected) {
                     try {
@@ -137,6 +139,7 @@ public class Client {
                 while (connected) {
                     if (connected) {
 
+                        //
                         Boolean validInputSL = false;
                         String inputText = "";
                         while (!validInputSL) {
@@ -162,6 +165,7 @@ public class Client {
                             }
                         } else {
                             try {
+                                //
                                 outputStream.writeBytes("DATA " + username + ": " + inputText + "\n");
                                 outputStream.flush();
                             } catch (IOException e) {
@@ -184,6 +188,7 @@ public class Client {
         System.out.println(textMessage);
     }
 
+    //
     public void disconnect() {
         connected = false;
         try {
@@ -225,6 +230,7 @@ public class Client {
         }
     }
 
+    //
     public boolean portVerify(int port) {
         if (!(port <= 65535 && port >= 0)) {
             display("Insert valid port number. Note only numbers allowed, between 0-65535.");
@@ -234,6 +240,7 @@ public class Client {
         }
     }
 
+    //
     public boolean ipVerify(String ip) {
         String ipPattern = "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
         Pattern pattern = Pattern.compile(ipPattern);
@@ -246,6 +253,7 @@ public class Client {
         }
     }
 
+    //
     public boolean dataVerify(String data) {
         //See @usernameVerify for regex explain
         String pattern = "^[a-zA-Z0-9_ -.,:=+/()!?@]{1,250}$";
