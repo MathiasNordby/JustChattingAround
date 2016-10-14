@@ -21,7 +21,7 @@ public class Client {
     public Client() {
 
     }
-
+    //Starter Client, sætter validInput til false, så den er klar til IP input, hvis intastede input bliver godkendt, validInput bliver true
     public void start() {
         try {
             Boolean validInput = false;
@@ -35,6 +35,7 @@ public class Client {
                 }
             }
 
+            //Det samme som ovenover bare med ServerPort
             validInput = false;
             int serverPort = 0;
             while (!validInput) {
@@ -45,10 +46,12 @@ public class Client {
                 }
             }
 
+            //Socket bliver oprettet med Server og Port. Out og inptStream sockets bliver oprettet
             socket = new Socket(serverAddress, serverPort);
             outputStream = new DataOutputStream(socket.getOutputStream());
             inputStream = new DataInputStream(socket.getInputStream());
 
+            //Hvis username ikke er i brug, info om username, og den skanner det valgte username, og tjekker om det kan godkendes
             Boolean usernameInUse = true;
             while (usernameInUse) {
                 validInput = false;
@@ -59,13 +62,15 @@ public class Client {
                         validInput = true;
                     }
                 }
-
+                //Viser username, og sender output socket afsted med username osv.
                 display("Username: " + username);
                 outputStream.writeBytes("JOIN " + username + ", " + serverAddress + ":" + serverPort + "\n");
                 outputStream.flush();
+                //
                 BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
                 MessageClient message = new MessageClient(in.readLine().toString());
 
+                //
                 if (message.getType() == MessageClient.J_OK) {
                     usernameInUse = false;
                     display("Login successful, welcome to the chat " + username);
@@ -76,7 +81,7 @@ public class Client {
                 }
             }
 
-
+            //Ny tråd oprettes,
             connected = true;
             Thread serverListener = new Thread(() -> {
                 while (connected) {
@@ -144,8 +149,9 @@ public class Client {
                                 }
 
                             }
-                            //Can we delete stuff in console??
+
                         }
+                        //
                         if (inputText.equals("EXIT")) {
                             try {
                                 outputStream.writeBytes("QUIT\n");

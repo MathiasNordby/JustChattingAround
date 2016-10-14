@@ -12,11 +12,13 @@ public class MessageClient {
     private String text, user_name, inputString;
     private String[] userlist;
 
+    //
     public MessageClient(String msg) {
         inputString = msg;
         if (msg != null) {
             type = FAIL;
 
+            //
             if (msg.equals("J_OK")) {
                 type = J_OK;
             } else if (msg.equals("J_ERR")) {
@@ -33,6 +35,7 @@ public class MessageClient {
             } else if (msg.startsWith("LIST")) {
                 type = LIST;
 
+                //
                 String[] messageSplit = msg.split("LIST\\s");
                 if(messageSplit.length >= 2){
                     //Made double split because else there would be 1 empty string at [0]

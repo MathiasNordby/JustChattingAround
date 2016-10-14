@@ -24,6 +24,7 @@ public class ActiveClient extends Thread {
         this.socket = socket;
         this.connectedServer = connectedServer;
 
+        //
         try {
             outputStream = new DataOutputStream(socket.getOutputStream());
             inputStream = new DataInputStream(socket.getInputStream());
@@ -33,12 +34,14 @@ public class ActiveClient extends Thread {
 
                 Boolean found = false;
 
+                //
                 MessageServer message = new MessageServer(in.readLine().toString());
                 if (message.getType() == MessageServer.JOIN) {
                     if (!usernameVerify(message.getUser_name())) {
                         outputStream.writeBytes("J_ERR\n");
                         outputStream.flush();
                     } else {
+                        //
                         for (ActiveClient client : connectedServer.getClientList()) {
                             if (client.getUsername().equalsIgnoreCase(message.getUser_name())) {
                                 outputStream.writeBytes("J_ERR\n");
@@ -46,6 +49,7 @@ public class ActiveClient extends Thread {
                                 found = true;
                             }
                         }
+                        //
                         if (!found) {
                             user_name = message.getUser_name();
                             outputStream.writeBytes("J_OK\n");
@@ -56,7 +60,7 @@ public class ActiveClient extends Thread {
                             usernameInUse = false;
                         }
                     }
-
+                //
                 } else {
                     connectedServer.display("Received invalid message");
                     close();
@@ -66,6 +70,7 @@ public class ActiveClient extends Thread {
 
         } catch (IOException e) {
 
+            //
             connectedServer.display("Error. Could not create IO streams: " + e);
             e.getStackTrace();
             close();
@@ -74,11 +79,13 @@ public class ActiveClient extends Thread {
 
     }
 
+    //
     public synchronized void run() {
         boolean connected = true;
         MessageServer message;
         while (connected) {
             try {
+                //
                 BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
                 message = new MessageServer(in.readLine());
             } catch (IOException ex) {
@@ -88,6 +95,7 @@ public class ActiveClient extends Thread {
 
             switch (message.getType()) {
 
+                //
                 case MessageServer.DATA:
                     if (dataVerify(message.getText())) {
                         connectedServer.broadcast(message);
@@ -95,6 +103,7 @@ public class ActiveClient extends Thread {
                         writeToThisClient(new MessageServer("Admin", "Insert valid data text. Rules: 1-250 chars long, only chars, digits, ‘-‘ and ‘_’ allowed"));
                     }
                     break;
+                //
                 case MessageServer.QUIT:
                     close();
                     connected = false;
@@ -104,6 +113,7 @@ public class ActiveClient extends Thread {
                         aliveTimer.cancel();
                     }
                     break;
+                //
                 case MessageServer.ALVE:
                     alive();
                     connectedServer.display("<" + user_name + "> Is alive");
@@ -116,6 +126,7 @@ public class ActiveClient extends Thread {
         close();
     }
 
+    //
     public void close() {
         try {
             if (outputStream != null) outputStream.close();
@@ -126,6 +137,7 @@ public class ActiveClient extends Thread {
         }
     }
 
+    //
     public boolean writeToThisClient(MessageServer message) {
         if (socket.isClosed()) {
             close();
@@ -133,6 +145,7 @@ public class ActiveClient extends Thread {
 
         }
         try {
+            //
             if (message.getType() == MessageServer.DATA) {
                 //So the person texting dont recive his own message
                 if (!message.getUser_name().equals(user_name)) {
@@ -140,16 +153,19 @@ public class ActiveClient extends Thread {
                     outputStream.writeBytes(temp);
                     outputStream.flush();
                 } else {
+                    //
                     //Maybe a bit overkill, but might be proper to use the object
                     String temp = "DATA " + "Me" + ": " + message.getText() + "\n";
                     outputStream.writeBytes(temp);
                     outputStream.flush();
                 }
+                //
             } else if (message.getType() == MessageServer.LIST) {
                 outputStream.writeBytes(message.getInputString());
                 outputStream.flush();
             }
 
+            //
         } catch (IOException e) {
             connectedServer.display("Error sending message to " + user_name);
             connectedServer.display(e.toString());
@@ -157,6 +173,7 @@ public class ActiveClient extends Thread {
         return true;
     }
 
+    //
     private void alive() {
         if(aliveTimer != null){
             aliveTimer.cancel();
@@ -199,6 +216,7 @@ public class ActiveClient extends Thread {
     }
 
     @Override
+    //
     public String toString() {
         return "Id: " + id + " Username: " + user_name + "\nConnected since: " + connectedDate + "\n" + socket.getInetAddress() + "\n";
     }
