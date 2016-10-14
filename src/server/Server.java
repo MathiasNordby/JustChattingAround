@@ -1,5 +1,6 @@
 package server;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -14,11 +15,15 @@ public class Server {
     private int serverPort;
     private boolean running;
     private ArrayList<ActiveClient> clientList;
+    private ServerSocket serverSocket;
 
     public Server() {
 
     }
-    //Starter server
+
+    /**
+     * Starter server
+     */
     public void start() {
         running = true;
         clientList = new ArrayList<>();
@@ -35,9 +40,23 @@ public class Server {
                 }
             }
 
-            //Imens serveren kører, ServerSocket accepteres, Portnummer fastlagt for denne server
-            ServerSocket serverSocket = new ServerSocket(serverPort);
+            //ServerSocket oprettes med tidligere indtastet portnummer
+            serverSocket = new ServerSocket(serverPort);
             display("Server up and running");
+
+            //Den laver en tråd til at lytte på consol inputtet. Bruges til at genstart serveren på consol
+            Thread scannerListner = new Thread(() -> {
+                while (running) {
+                    String input = scan.nextLine();
+                    if (input.equals("EXIT")) {
+                        display("EXITING..... RESTARTING");
+                        restart();
+                    }
+                }
+            });
+            scannerListner.start();
+
+
             while (running) {
                 Socket socket = serverSocket.accept();
 
@@ -53,27 +72,42 @@ public class Server {
             for (ActiveClient activeClient : clientList) {
                 activeClient.close();
             }
+
+            restart();
         } catch (Exception e) {
             display("Error when closing the server and clients: " + e);
         }
 
     }
-    //Stopper serveren, gør klar så man kan oprette en ny / anden server
-    protected void stop() {
+
+    /**
+     * stopper serveren, gør klar så man kan oprette en ny / anden server
+     */
+    protected void restart() {
         running = false;
         try {
-            new Socket("localhost", serverPort);
-        } catch (Exception e) {
+            serverSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        start();
     }
-    //Printer textMessage
+
+    /**
+     * Metoden er lavet til at man ik skal bruge Sout konstant
+     * Ideen er at klargører så man kan smide beskederen afsted til en Gui, så den eneste metode der skal ændres er denne
+     * @param textMessage
+     */
     public void display(String textMessage) {
         System.out.println(textMessage);
     }
 
-    //Tjekker om der er en client der ikke er aktiv, og fjerner den fra ActiveClients listen.
-    //Hvis client ikke er active: Besked om at den gældende client er disconnectet
-    public void broadcast(MessageServer message) {
+
+    /**
+     * Sender beskeder ud til alle clients, hvis ikke den kan finde den client, fjerner den activeClients fra sin client list
+     * @param message
+     */
+    public void broadcast(ServerMessage message) {
         for (int i = clientList.size(); --i >= 0; ) {
             ActiveClient activeClient = clientList.get(i);
             if (!activeClient.writeToThisClient(message)) {
@@ -81,12 +115,16 @@ public class Server {
                 display("Disconnected Client " + activeClient.getUsername() + " removed from list.");
             }
         }
-        //Hvis de to nederstående er lig hinanden, viser den usernavnet og deres message i consolen
-        if (message.getType() == MessageServer.DATA) {
+        //Hvis message typen er DATA så til sidst viser den Usernavnet og den messagde de sender, bagefter, så servern også kan se hvad de skriver.
+        if (message.getType() == ServerMessage.DATA) {
             display(message.getUser_name() + ": " + message.getText());
         }
     }
-    //Fjerner ikke aktive clients ud fra deres id.
+
+    /**
+     * Fjerner activeClients fra client listen ud fra deres id.
+     * @param id
+     */
     public void removeClient(int id) {
         for (ActiveClient activeClient : clientList) {
             if (activeClient.getId() == id) {
@@ -96,17 +134,26 @@ public class Server {
             }
         }
     }
-    //Laver en String med ActiveClients, med deres username
+
+    /**
+     * Laver en String med ActiveClients, og broadcaster dem
+     */
     public void updateActiveClientList() {
         String list = "LIST ";
         for (ActiveClient client : clientList) {
             list = list + client.getUsername() + " ";
+            display(client.toString());
         }
         list = list + "\n";
-        //Broadcaster List, til LIST i MessageServer
-        broadcast(new MessageServer(MessageServer.LIST, list));
+        //Broadcaster List, til LIST i ServerMessage
+        broadcast(new ServerMessage(ServerMessage.LIST, list));
     }
-    //Tjekker at port nummer er gyldigt
+
+    /**
+     * Tjekker at port nummer er gyldigt
+     * @param port tjekker portnummer
+     * @return retunerer om portnummeret er gyldigt
+     */
     public boolean portVerify(int port) {
         if (!(port <= 65535 && port >= 0)) {
             display("Insert valid port number. Note only numbers allowed, between 0-65535.");
@@ -115,11 +162,19 @@ public class Server {
             return true;
         }
     }
-    // Retunerer clientList
+
+    /**
+     * get clientlist
+     * @return retunerer clientlist (ArrayList)
+     */
     public ArrayList<ActiveClient> getClientList() {
         return clientList;
     }
 
+    /**
+     * Det er denne metode der gør det muligt at starte javefilen
+     * @param args
+     */
     public static void main(String[] args) {
         new Server().start();
     }

@@ -19,12 +19,18 @@ public class ActiveClient extends Thread {
     private Server connectedServer;
     private Timer aliveTimer;
 
+    /**
+     *
+     * @param socket
+     * @param id hvert active har en unikt id
+     * @param connectedServer
+     */
     public ActiveClient(Socket socket, int id, Server connectedServer) {
         this.id = id;
         this.socket = socket;
         this.connectedServer = connectedServer;
 
-        //
+        //Laver input/Putputstreams
         try {
             outputStream = new DataOutputStream(socket.getOutputStream());
             inputStream = new DataInputStream(socket.getInputStream());
@@ -34,14 +40,14 @@ public class ActiveClient extends Thread {
 
                 Boolean found = false;
 
-                //
-                MessageServer message = new MessageServer(in.readLine().toString());
-                if (message.getType() == MessageServer.JOIN) {
+                //Modtager et JOIN request, tjekker om username er gyldigt, hvis ikke, sender den en J_ERROR
+                ServerMessage message = new ServerMessage(in.readLine().toString());
+                if (message.getType() == ServerMessage.JOIN) {
                     if (!usernameVerify(message.getUser_name())) {
                         outputStream.writeBytes("J_ERR\n");
                         outputStream.flush();
                     } else {
-                        //
+                        //Kigger igennem alle de aktive clients, og tjekker om der er nogle med samme navn, hvis der, sender den også en J_ERROR
                         for (ActiveClient client : connectedServer.getClientList()) {
                             if (client.getUsername().equalsIgnoreCase(message.getUser_name())) {
                                 outputStream.writeBytes("J_ERR\n");
@@ -49,7 +55,8 @@ public class ActiveClient extends Thread {
                                 found = true;
                             }
                         }
-                        //
+                        // Hvis ikke, og der er ingen med det samme bruger navn, bliver brugeren accepteret og den får et J_OK tilbage
+                        // Nu sender første gang alive
                         if (!found) {
                             user_name = message.getUser_name();
                             outputStream.writeBytes("J_OK\n");
@@ -60,9 +67,9 @@ public class ActiveClient extends Thread {
                             usernameInUse = false;
                         }
                     }
-                //
+                //Hvis det ik er et JOIN
                 } else {
-                    connectedServer.display("Received invalid message");
+                    connectedServer.display("Received invalid JOIN message");
                     close();
                 }
 
@@ -79,15 +86,18 @@ public class ActiveClient extends Thread {
 
     }
 
-    //
+    /**
+     * Run metode til at starte tråden
+     */
+    //synchroniced (synkroniserer threads, så de ikke står og laver problemer for hinanden.)
     public synchronized void run() {
         boolean connected = true;
-        MessageServer message;
+        ServerMessage message;
         while (connected) {
             try {
-                //
+                //Laver en ny tråd der lytter til clientforbindelsen, på den næste modtagede besked
                 BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
-                message = new MessageServer(in.readLine());
+                message = new ServerMessage(in.readLine());
             } catch (IOException ex) {
                 connectedServer.display(user_name + " Error reading Streams: " + ex);
                 break;
@@ -95,26 +105,26 @@ public class ActiveClient extends Thread {
 
             switch (message.getType()) {
 
-                //
-                case MessageServer.DATA:
+                // Det er når vi får en bruger besked
+                case ServerMessage.DATA:
                     if (dataVerify(message.getText())) {
                         connectedServer.broadcast(message);
                     } else {
-                        writeToThisClient(new MessageServer("Admin", "Insert valid data text. Rules: 1-250 chars long, only chars, digits, ‘-‘ and ‘_’ allowed"));
+                        writeToThisClient(new ServerMessage("Admin", "Insert valid data text. Rules: 1-250 chars long, only chars, digits, ‘-‘ and ‘_’ allowed"));
                     }
                     break;
-                //
-                case MessageServer.QUIT:
+                //Når brugeren vælger selv at exit
+                case ServerMessage.QUIT:
                     close();
                     connected = false;
-                    connectedServer.broadcast(new MessageServer(user_name, " disconnected by own will"));
+                    connectedServer.broadcast(new ServerMessage(user_name, " disconnected by own will"));
                     connectedServer.updateActiveClientList();
                     if(aliveTimer != null){
                         aliveTimer.cancel();
                     }
                     break;
-                //
-                case MessageServer.ALVE:
+                //Det heartbeat man får ved 60 sekund
+                case ServerMessage.ALVE:
                     alive();
                     connectedServer.display("<" + user_name + "> Is alive");
                     break;
@@ -126,7 +136,10 @@ public class ActiveClient extends Thread {
         close();
     }
 
-    //
+
+    /**
+     * Lukker outpusStream, InputStrem og socket. Til sidst fjerner den clienten fra serveren
+     */
     public void close() {
         try {
             if (outputStream != null) outputStream.close();
@@ -137,35 +150,39 @@ public class ActiveClient extends Thread {
         }
     }
 
-    //
-    public boolean writeToThisClient(MessageServer message) {
+    /**
+     * Den får en message ind, og skriver tilbage til clienten
+     * @param message
+     * @return
+     */
+    public boolean writeToThisClient(ServerMessage message) {
+        //Hvis socket er lukket, retunere den false
         if (socket.isClosed()) {
             close();
             return false;
 
         }
         try {
-            //
-            if (message.getType() == MessageServer.DATA) {
-                //So the person texting dont recive his own message
+            //kigger på hvilken message type.
+            if (message.getType() == ServerMessage.DATA) {
+                //kigger på om brugeren hedder det samme som den client den sender til, hvis ikke, sender den brugernavnet + beskedens indhold
                 if (!message.getUser_name().equals(user_name)) {
                     String temp = "DATA " + message.getUser_name() + ": " + message.getText() + "\n";
                     outputStream.writeBytes(temp);
                     outputStream.flush();
                 } else {
-                    //
-                    //Maybe a bit overkill, but might be proper to use the object
-                    String temp = "DATA " + "Me" + ": " + message.getText() + "\n";
+                    //Hvis det er det samme navn, ændre den navnet til Me, og sender Me + beskedens indhold
+                    String temp = "DATA " + "Me: " + message.getText() + "\n";
                     outputStream.writeBytes(temp);
                     outputStream.flush();
                 }
-                //
-            } else if (message.getType() == MessageServer.LIST) {
+                //Hvis typen er LIST, sender den listen afsted mod output
+            } else if (message.getType() == ServerMessage.LIST) {
                 outputStream.writeBytes(message.getInputString());
                 outputStream.flush();
             }
 
-            //
+
         } catch (IOException e) {
             connectedServer.display("Error sending message to " + user_name);
             connectedServer.display(e.toString());
@@ -173,21 +190,27 @@ public class ActiveClient extends Thread {
         return true;
     }
 
-    //
+    //Denne timer står for at smide folk ud. Efter 70 sekunder smider den folk ud
     private void alive() {
         if(aliveTimer != null){
             aliveTimer.cancel();
         }
+        //Hvis den er alive, laver den bare en ny timer
         aliveTimer = new Timer();
         aliveTimer.schedule(new TimerTask() {
             @Override
             public void run() {
                 close();
-                connectedServer.broadcast(new MessageServer(user_name, " disconnected by dropout\n"));
+                connectedServer.broadcast(new ServerMessage(user_name, " disconnected by dropout\n"));
             }
         }, 70000);
     }
 
+    /**
+     * Kigger på en den har et gyldigt username
+     * @param username Username bliver tjekket
+     * @return retunerer om den er gyldig eller ej
+     */
     public boolean usernameVerify(String username) {
         /**
          * ^ : start of string
@@ -199,25 +222,36 @@ public class ActiveClient extends Thread {
          * ] : end of character group
          * {x,y] : x min length, y max length
          * $ : end of string
-         *
          */
-        String pattern = "^[a-zA-Z0-9_-]{0,12}$";
+        //Det her mømster ser på om den indeholder store og små bogstaver A-Z,0-9,_-. Samt at det må være mellem 1-12 karakterer
+        String pattern = "^[a-zA-Z0-9_-]{1,12}$"; // Vi ønsker at man min skal have 1 char som brugernavn.
         return username.matches(pattern);
     }
 
+    /**
+     * Metoden kigger på om det få et gyldigt input i data
+     * @param data data der skal tjekkes
+     * @return retunerer om den er gyldig elelr ej
+     */
     public boolean dataVerify(String data) {
         //See @usernameVerify for regex explain
         String pattern = "^[a-zA-Z0-9_ -.,:=+/()!?@]{1,250}$";
         return data.matches(pattern);
     }
 
+    /**
+     * get username
+     * @return retunerer user_name
+     */
     public String getUsername() {
         return user_name;
     }
 
     @Override
-    //
+    /**
+     * toString metode med ID Username og tid man er connected
+     */
     public String toString() {
-        return "Id: " + id + " Username: " + user_name + "\nConnected since: " + connectedDate + "\n" + socket.getInetAddress() + "\n";
+        return "Id: " + id + " Username: " + user_name + " Connected since: " + connectedDate;
     }
 }
