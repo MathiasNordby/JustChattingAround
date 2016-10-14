@@ -18,11 +18,11 @@ public class ActiveClient extends Thread {
     private Date connectedDate;
     private Server connectedServer;
     private Timer aliveTimer;
+    private boolean connected;
 
     /**
-     *
      * @param socket
-     * @param id hvert active har en unikt id
+     * @param id              hvert active har en unikt id
      * @param connectedServer
      */
     public ActiveClient(Socket socket, int id, Server connectedServer) {
@@ -67,7 +67,7 @@ public class ActiveClient extends Thread {
                             usernameInUse = false;
                         }
                     }
-                //Hvis det ik er et JOIN
+                    //Hvis det ik er et JOIN
                 } else {
                     connectedServer.display("Received invalid JOIN message");
                     close();
@@ -91,7 +91,7 @@ public class ActiveClient extends Thread {
      */
     //synchroniced (synkroniserer threads, så de ikke står og laver problemer for hinanden.)
     public synchronized void run() {
-        boolean connected = true;
+        connected = true;
         ServerMessage message;
         while (connected) {
             try {
@@ -99,7 +99,6 @@ public class ActiveClient extends Thread {
                 BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
                 message = new ServerMessage(in.readLine());
             } catch (IOException ex) {
-                connectedServer.display(user_name + " Error reading Streams: " + ex);
                 break;
             }
 
@@ -119,7 +118,7 @@ public class ActiveClient extends Thread {
                     connected = false;
                     connectedServer.broadcast(new ServerMessage(user_name, " disconnected by own will"));
                     connectedServer.updateActiveClientList();
-                    if(aliveTimer != null){
+                    if (aliveTimer != null) {
                         aliveTimer.cancel();
                     }
                     break;
@@ -141,17 +140,24 @@ public class ActiveClient extends Thread {
      * Lukker outpusStream, InputStrem og socket. Til sidst fjerner den clienten fra serveren
      */
     public void close() {
-        try {
-            if (outputStream != null) outputStream.close();
-            if (inputStream != null) inputStream.close();
-            if (socket != null) socket.close();
-            connectedServer.removeClient(id);
-        } catch (Exception e) {
+        if (connected) {
+            connected = false;
+            try {
+                if (outputStream != null) outputStream.close();
+                if (inputStream != null) inputStream.close();
+                if (socket != null) socket.close();
+                connectedServer.removeClient(id);
+            } catch (Exception e) {
+            }
+            if (aliveTimer != null) {
+                aliveTimer.cancel();
+            }
         }
     }
 
     /**
      * Den får en message ind, og skriver tilbage til clienten
+     *
      * @param message
      * @return
      */
@@ -192,7 +198,7 @@ public class ActiveClient extends Thread {
 
     //Denne timer står for at smide folk ud. Efter 70 sekunder smider den folk ud
     private void alive() {
-        if(aliveTimer != null){
+        if (aliveTimer != null) {
             aliveTimer.cancel();
         }
         //Hvis den er alive, laver den bare en ny timer
@@ -208,6 +214,7 @@ public class ActiveClient extends Thread {
 
     /**
      * Kigger på en den har et gyldigt username
+     *
      * @param username Username bliver tjekket
      * @return retunerer om den er gyldig eller ej
      */
@@ -230,6 +237,7 @@ public class ActiveClient extends Thread {
 
     /**
      * Metoden kigger på om det få et gyldigt input i data
+     *
      * @param data data der skal tjekkes
      * @return retunerer om den er gyldig elelr ej
      */
@@ -241,6 +249,7 @@ public class ActiveClient extends Thread {
 
     /**
      * get username
+     *
      * @return retunerer user_name
      */
     public String getUsername() {

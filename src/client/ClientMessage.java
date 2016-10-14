@@ -16,6 +16,7 @@ public class ClientMessage {
     /**
      * Parameteren på den er String, og den msg er den modtagede besked. Den nedbryder den modtagede besked
      * fra client og laver det om til et message objekt. Gør det nemmere at håndterer
+     *
      * @param msg
      */
     public ClientMessage(String msg) {
@@ -31,18 +32,18 @@ public class ClientMessage {
                 type = DATA;
 
                 String[] messageSplit = msg.split("DATA\\s|:\\s");
-                if(messageSplit.length >= 3){
+                if (messageSplit.length >= 3) {
                     user_name = messageSplit[1];
                     text = messageSplit[2];
-                } else{
+                } else {
                     type = FAIL;
                 }
             } else if (msg.startsWith("LIST")) {
                 type = LIST;
 
                 //Først splittes den modtagede message op i en Liste, for at få en String af alle Users
-                String[] messageSplit = msg.split("LIST\\s",2);
-                if(messageSplit.length >= 2){
+                String[] messageSplit = msg.split("LIST\\s", 2);
+                if (messageSplit.length >= 2) {
                     //Den splitter den modtaget string (Den der indeholder alle brugernavne) op.
                     userlist = messageSplit[1].split("\\s");
                 } else {
@@ -59,6 +60,7 @@ public class ClientMessage {
 
     /**
      * Get Type
+     *
      * @return den retunerer type
      */
     public int getType() {
@@ -67,6 +69,7 @@ public class ClientMessage {
 
     /**
      * get text
+     *
      * @return retunerer text
      */
     public String getText() {
@@ -75,6 +78,7 @@ public class ClientMessage {
 
     /**
      * get username
+     *
      * @return retunerer user_name
      */
     public String getUser_name() {
@@ -83,6 +87,7 @@ public class ClientMessage {
 
     /**
      * get userlist
+     *
      * @return retunerer userlist
      */
     public String[] getUserlist() {

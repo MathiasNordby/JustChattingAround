@@ -43,14 +43,28 @@ public class Server {
             //ServerSocket oprettes med tidligere indtastet portnummer
             serverSocket = new ServerSocket(serverPort);
             display("Server up and running");
+            display("Write 'RESTART' to restart server to create a new. Write 'EXIT' to exit this program.");
 
-            //Den laver en tråd til at lytte på consol inputtet. Bruges til at genstart serveren på consol
+            //Den laver en tråd til at lytte på consol inputtet. Bruges til at genstarte og lukke serveren på consol
             Thread scannerListner = new Thread(() -> {
                 while (running) {
                     String input = scan.nextLine();
-                    if (input.equals("EXIT")) {
-                        display("EXITING..... RESTARTING");
-                        restart();
+                    if (input.equals("RESTART")) {
+                        display("RESTARTING...");
+                        broadcast(new ServerMessage("Admin", "Server restarting"));
+                        try {
+                            Thread.sleep(100);
+                            stop();
+                            Thread.sleep(100);
+                            start();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } else if (input.equals("EXIT")) {
+                        display("EXITING...");
+                        broadcast(new ServerMessage("Admin", "Server closes"));
+                        stop();
+                        System.exit(0);
                     }
                 }
             });
@@ -58,7 +72,12 @@ public class Server {
 
 
             while (running) {
-                Socket socket = serverSocket.accept();
+                Socket socket;
+                try {
+                    socket = serverSocket.accept();
+                } catch (IOException e) {
+                    break;
+                }
 
                 //ActiveClientThread bliver tilføjet til clientList. ActiveClientThread startes, og listen opdateres
                 ActiveClient activeClientThread = new ActiveClient(socket, ++clientId, this);
@@ -67,13 +86,8 @@ public class Server {
                 Thread.sleep(100);
                 updateActiveClientList();
             }
-            serverSocket.close();
             //Hvis der opstår en fejl, kører Activeclient igennem og lukker listen
-            for (ActiveClient activeClient : clientList) {
-                activeClient.close();
-            }
 
-            restart();
         } catch (Exception e) {
             display("Error when closing the server and clients: " + e);
         }
@@ -83,19 +97,24 @@ public class Server {
     /**
      * stopper serveren, gør klar så man kan oprette en ny / anden server
      */
-    protected void restart() {
+    protected void stop() {
         running = false;
         try {
             serverSocket.close();
-        } catch (IOException e) {
+            serverSocket = null;
+            for (ActiveClient activeClient : clientList) {
+                activeClient.close();
+            }
+            clientList = new ArrayList<>();
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        start();
     }
 
     /**
      * Metoden er lavet til at man ik skal bruge Sout konstant
      * Ideen er at klargører så man kan smide beskederen afsted til en Gui, så den eneste metode der skal ændres er denne
+     *
      * @param textMessage
      */
     public void display(String textMessage) {
@@ -105,6 +124,7 @@ public class Server {
 
     /**
      * Sender beskeder ud til alle clients, hvis ikke den kan finde den client, fjerner den activeClients fra sin client list
+     *
      * @param message
      */
     public void broadcast(ServerMessage message) {
@@ -123,6 +143,7 @@ public class Server {
 
     /**
      * Fjerner activeClients fra client listen ud fra deres id.
+     *
      * @param id
      */
     public void removeClient(int id) {
@@ -151,6 +172,7 @@ public class Server {
 
     /**
      * Tjekker at port nummer er gyldigt
+     *
      * @param port tjekker portnummer
      * @return retunerer om portnummeret er gyldigt
      */
@@ -165,6 +187,7 @@ public class Server {
 
     /**
      * get clientlist
+     *
      * @return retunerer clientlist (ArrayList)
      */
     public ArrayList<ActiveClient> getClientList() {
@@ -173,6 +196,7 @@ public class Server {
 
     /**
      * Det er denne metode der gør det muligt at starte javefilen
+     *
      * @param args
      */
     public static void main(String[] args) {

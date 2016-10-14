@@ -19,6 +19,7 @@ public class Client {
     public Client() {
 
     }
+
     /**
      * Starter Client
      */
@@ -78,6 +79,7 @@ public class Client {
                 if (message.getType() == ClientMessage.J_OK) {
                     usernameInUse = false;
                     display("Login successful, welcome to the chat " + username);
+                    display("Write 'EXIT' to exit this program. Write 'QUIT' to quit the session and freshly connect to a socket again.");
                 } else if (message.getType() == ClientMessage.J_ERR) {
                     display("Username " + username + " already in use, try again");
                 } else {
@@ -87,6 +89,7 @@ public class Client {
 
             //Nu sætter vi connected til true, fordi cienten er forbundet til serveren.
             connected = true;
+
 
             //Laver en ny tråd til at lytte til serveren
             Thread serverListener = new Thread(() -> {
@@ -112,6 +115,7 @@ public class Client {
                         if (connected) {
                             display("Lost server connection: " + e);
                             disconnect();
+                            display("Enter something and press enter to continue. Like 'test' and then press enter.");
                         }
                     }
                 }
@@ -131,12 +135,14 @@ public class Client {
                         if (connected) {
                             display("Server timed out: " + e);
                             disconnect();
+                            display("Enter something and press enter to continue. Like 'test' and then press enter.");
                             break;
                         }
                     } catch (InterruptedException e) {
                         if (connected) {
                             display("Server timed out: " + e);
                             disconnect();
+                            display("Enter something and press enter to continue. Like 'test' and then press enter.");
                             break;
                         }
                     }
@@ -150,39 +156,52 @@ public class Client {
             Thread scannerListner = new Thread(() -> {
                 while (connected) {
 
-                        //Bruges til at modtage beskeder fra brugeren, og tjekker om det er gyldigt input eller ej.
-                        Boolean validInputSL = false;
-                        String inputText = "";
-                        while (!validInputSL) {
-                            inputText = scan.nextLine();
-                            if (!inputText.equals("")) {
-                                if (dataVerify(inputText)) {
-                                    validInputSL = true;
-                                } else {
-                                    display("Insert valid data text. Rules: 1-250 chars long, only chars, digits, ‘-‘ and ‘_’ allowed");
-                                }
-
+                    //Bruges til at modtage beskeder fra brugeren, og tjekker om det er gyldigt input eller ej.
+                    Boolean validInputSL = false;
+                    String inputText = "";
+                    while (!validInputSL) {
+                        inputText = scan.nextLine();
+                        if (!inputText.equals("") || connected) {
+                            if (dataVerify(inputText)) {
+                                validInputSL = true;
+                            } else {
+                                display("Insert valid data text. Rules: 1-250 chars long, only chars, digits, ‘-‘ and ‘_’ allowed");
                             }
 
-                        }
-                        //Hvis inputtet er = EXIT (ALL CAPS) Så bliver man disconeccetede fra serveren
-                        if (inputText.equals("EXIT")) {
-                            try {
-                                outputStream.writeBytes("QUIT\n");
-                                outputStream.flush();
-                                disconnect();
-                            } catch (IOException e) {
-                                display("Error when quiting: " + e);
-                            }
                         } else {
-                            try {
-                                //Ellers sender den teksten afsted med output Stream, hvor den sender Data, bruger navn og beskeden.
-                                outputStream.writeBytes("DATA " + username + ": " + inputText + "\n");
-                                outputStream.flush();
-                            } catch (IOException e) {
-                                display("Error when sending message: " + e);
-                            }
+                            break;
                         }
+
+                    }
+                    //Hvis inputtet er = EXIT (ALL CAPS) Så bliver man disconeccetede fra serveren
+                    if (inputText.equals("QUIT")) {
+                        try {
+                            outputStream.writeBytes("QUIT\n");
+                            outputStream.flush();
+                            disconnect();
+                            display("Enter something and press enter to continue. Like 'test' and then press enter.");
+                        } catch (IOException e) {
+                            display("Error when quiting: " + e);
+                        }
+                    }
+                    if (inputText.equals("EXIT")) {
+                        try {
+                            outputStream.writeBytes("QUIT\n");
+                            outputStream.flush();
+                            disconnect();
+                            System.exit(0);
+                        } catch (IOException e) {
+                            display("Error when quiting: " + e);
+                        }
+                    } else {
+                        try {
+                            //Ellers sender den teksten afsted med output Stream, hvor den sender Data, bruger navn og beskeden.
+                            outputStream.writeBytes("DATA " + username + ": " + inputText + "\n");
+                            outputStream.flush();
+                        } catch (IOException e) {
+                            display("Error when sending message: " + e);
+                        }
+                    }
                 }
 
                 start();
@@ -192,12 +211,14 @@ public class Client {
         } catch (Exception e) {
             display("Unsuccessful login: " + e);
             disconnect();
+            start();
         }
     }
 
     /**
      * Metoden er lavet til at man ik skal bruge Sout konstant
      * Ideen er at klargører så man kan smide beskederen afsted til en Gui, så den eneste metode der skal ændres er denne
+     *
      * @param textMessage
      */
     public void display(String textMessage) {
@@ -228,6 +249,7 @@ public class Client {
 
     /**
      * Metoden kigger på om den har et gyldigt username
+     *
      * @param username username skal tjekkes
      * @return retunerer om den er gyldig eller ej
      */
@@ -255,8 +277,8 @@ public class Client {
     }
 
     /**
-     *
      * Metoden kigger på om den får en gyldig port
+     *
      * @param port Portnummer der skal tjekkes
      * @return retunerer om den er gyldig eller ej
      */
@@ -271,6 +293,7 @@ public class Client {
 
     /**
      * Metode kigger på om den får et gyldigt IP indput
+     *
      * @param ip IP der skal tjekkkes
      * @return retunerer om den er gyldig eller ej
      */
@@ -288,6 +311,7 @@ public class Client {
 
     /**
      * Den kigger bare på om data teksten er gyldig
+     *
      * @param data Data teksten der tjekkes
      * @return retunerer om den er gyldig eller ej
      */

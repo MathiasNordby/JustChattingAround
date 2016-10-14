@@ -14,6 +14,7 @@ public class ServerMessage {
     /**
      * Parameteren på den er String, og den msg er den modtagede besked. Den nedbryder den modtagede besked
      * fra serven og laver det om til et message objekt. Gør det nemmere at håndterer
+     *
      * @param msg
      */
     public ServerMessage(String msg) {
@@ -26,7 +27,7 @@ public class ServerMessage {
 
                 //Splitter message op ved JOIN-mellemtum, og ved komma-mellemrum, og ved kolon.
                 String[] messageSplit = msg.split("JOIN\\s|,\\s|:");
-                if(messageSplit.length <= 4) { //Der er 4 i alt, det første er typen JOIN altså [0]
+                if (messageSplit.length <= 4) { //Der er 4 i alt, det første er typen JOIN altså [0]
                     user_name = messageSplit[1]; // det andet er username [1]
                     ip = messageSplit[2]; //Det tredje er IP [2]
                     try {
@@ -45,7 +46,7 @@ public class ServerMessage {
             } else if (msg.startsWith("DATA")) {
                 type = DATA;
                 String[] messageSplit = msg.split("DATA\\s|:\\s");
-                if(messageSplit.length >= 3){
+                if (messageSplit.length >= 3) {
                     user_name = messageSplit[1];
                     text = messageSplit[2];
                 } else {
@@ -65,6 +66,7 @@ public class ServerMessage {
 
     /**
      * Tager typen DATA, og tager en gælden besked fra en gælden user. Bliver brugt til at broadcaste DATA beskeder
+     *
      * @param user_name
      * @param text
      */
@@ -76,6 +78,7 @@ public class ServerMessage {
 
     /**
      * Bruges til at sende en type afsted og inputstring, bliver brugt til at broadcaste LIST beskeder
+     *
      * @param type
      * @param inputString
      */
@@ -86,6 +89,7 @@ public class ServerMessage {
 
     /**
      * get Type
+     *
      * @return retunerer type
      */
     public int getType() {
@@ -94,6 +98,7 @@ public class ServerMessage {
 
     /**
      * get text
+     *
      * @return retunerer text
      */
     public String getText() {
@@ -102,6 +107,7 @@ public class ServerMessage {
 
     /**
      * get username
+     *
      * @return retunerer user_name
      */
     public String getUser_name() {
@@ -110,6 +116,7 @@ public class ServerMessage {
 
     /**
      * get inputString
+     *
      * @return retunerer inputString
      */
     public String getInputString() {
